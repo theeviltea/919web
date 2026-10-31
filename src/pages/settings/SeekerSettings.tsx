@@ -270,26 +270,45 @@ export function EditGeneral() {
         <div className="small muted">The first photo is your cover.</div>
       </Sec>
       <Sec title="Video presentation">
-        <div className="row g16 wrap">
+        <div className="row g16" style={{ alignItems: 'center' }}>
           {video ? (
-            <div className="rel ovh" style={{ width: 120, height: 160, borderRadius: 16 }}>
+            <div className="rel ovh" style={{ width: 120, height: 160, borderRadius: 16, flex: 'none' }}>
               <img src={video.poster} alt="" className="ph-cover" style={{ height: '100%' }} />
+              <span className="play">
+                <span style={{ width: 40, height: 40 }}>
+                  <Icon name="play-filled" size={16} />
+                </span>
+              </span>
               <span className="dur" style={{ left: 8, bottom: 8 }}>
                 {video.duration}
               </span>
             </div>
-          ) : null}
-          <div className="row g8">
-            <label className="btn secondary h44">
+          ) : (
+            <label className="drop" style={{ width: 120, height: 160, flex: 'none', fontSize: 14 }}>
               <input type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => e.target.files?.[0] && setVideo({ poster: p.photo ?? '', duration: '0:42' })} />
-              <Icon name="video" size={18} />
-              {video ? 'Replace' : 'Upload video'}
+              <Icon name="video" size={24} />
+              Add video
             </label>
-            {video ? (
-              <Btn kind="secondary" h={44} icon="trash" onClick={() => setVideo(undefined)}>
-                Remove
-              </Btn>
-            ) : null}
+          )}
+          <div className="grow col g10" style={{ minWidth: 0 }}>
+            <div>
+              <div className="s15 strong">{video ? `Your video · ${video.duration}` : 'No video yet'}</div>
+              <div className="small muted lh" style={{ marginTop: 2 }}>
+                Up to 60 seconds. Employers watch it before they invite you.
+              </div>
+            </div>
+            <div className="vid-acts">
+              <label className="btn secondary h40">
+                <input type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => e.target.files?.[0] && setVideo({ poster: p.photo ?? '', duration: '0:42' })} />
+                <Icon name="video" size={16} />
+                {video ? 'Replace' : 'Upload'}
+              </label>
+              {video ? (
+                <Btn kind="secondary" h={40} icon="trash" onClick={() => setVideo(undefined)}>
+                  Remove
+                </Btn>
+              ) : null}
+            </div>
           </div>
         </div>
       </Sec>
@@ -312,18 +331,18 @@ export function EditGeneral() {
               </button>
             </div>
           ))}
-          <select
-            className="drop"
-            aria-label="Add language"
-            value=""
-            onChange={(e) => e.target.value && setLangs([...langs, { code: e.target.value.slice(0, 2).toUpperCase(), name: e.target.value, level: 'Fluent' }])}
-            style={{ height: 56, padding: '0 16px', fontSize: 15, fontWeight: 700, textAlign: 'center' }}
-          >
-            <option value="">+ Add language</option>
-            {LANGS.filter((x) => !langs.some((l) => l.name === x)).map((x) => (
-              <option key={x}>{x}</option>
-            ))}
-          </select>
+          <label className="drop add-lang">
+            <Icon name="add" size={20} />
+            Add language
+            <select aria-label="Add language" value="" onChange={(e) => e.target.value && setLangs([...langs, { code: e.target.value.slice(0, 2).toUpperCase(), name: e.target.value, level: 'Fluent' }])}>
+              <option value="" disabled>
+                Choose a language
+              </option>
+              {LANGS.filter((x) => !langs.some((l) => l.name === x)).map((x) => (
+                <option key={x}>{x}</option>
+              ))}
+            </select>
+          </label>
         </div>
       </Sec>
       <SaveBar

@@ -164,6 +164,10 @@ ul { list-style: none; }
 .vrow:hover { box-shadow: 0 6px 20px rgba(14,26,43,.06); }
 .vrow > a, .vrow > [data-to] { color: inherit; }
 .photogrid .mkcover { opacity: 0; transition: opacity .15s; }
+.drop { text-align: center; }
+.add-lang { position: relative; height: 56px; flex-direction: row; font-size: 15px; }
+.add-lang select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.vid-acts { display: flex; flex-wrap: wrap; gap: 8px; } .vid-acts > * { flex: 1 1 120px; max-width: 180px; }
 .photogrid > div:hover .mkcover, .photogrid .mkcover:focus-visible { opacity: 1; }
 .vrow .cover { flex: none; width: 72px; height: 72px; border-radius: 18px; object-fit: cover; object-position: center 25%; }
 .vrow .pay { flex: none; width: 190px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
@@ -365,6 +369,16 @@ ul { list-style: none; }
 /* ---------- settings rows with a wide control (theme switch) ---------- */
 .srow > .grow { min-width: 0; }
 @media (max-width: 860px) { .srow:has(> .tabs) { flex-wrap: wrap; } .srow > .tabs { flex: 1 1 100%; margin-left: 0; } .srow > .tabs .tab { flex: 1; } }
+
+/* ---------- photo grid on phones: 3 per row, cover label at the bottom so it never meets the delete button ---------- */
+@media (max-width: 860px) {
+  .photogrid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px !important; }
+  .photogrid img { border-radius: 14px !important; }
+  .photogrid .drop { border-radius: 14px; }
+  .photogrid .pill.white { top: auto !important; bottom: 6px; left: 6px !important; height: 22px !important; font-size: 11px; padding: 0 8px; }
+  .photogrid .mkcover { display: none; }
+  .photogrid button[aria-label="Remove photo"] { top: 6px !important; right: 6px !important; width: 28px !important; height: 28px !important; }
+}
 
 /* ---------- edit profile header ---------- */
 @media (max-width: 860px) { .edit-head { flex-wrap: wrap; } .edit-head-act { flex-basis: 100%; } .edit-head-act .btn { width: 100%; } }

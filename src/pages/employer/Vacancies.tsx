@@ -156,7 +156,7 @@ export function MyVacancies() {
       </div>
       {tab === 'mine' ? (
         <>
-          <div className="grid4 mt24" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr)) 1.2fr' }}>
+          <div className="grid4 vstats mt24">
             <div className="stat">
               <div className="n">{n('active')}</div>
               <div className="s14 semi" style={{ marginTop: 4 }}>

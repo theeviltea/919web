@@ -43,6 +43,7 @@ ul { list-style: none; }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.grid4.vstats { grid-template-columns: repeat(3, minmax(0, 1fr)) 1.2fr; }
 .grid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .grid6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
 .grid6.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -324,7 +325,10 @@ ul { list-style: none; }
   .layout-3, .layout-l { grid-template-columns: minmax(0, 1fr); }
   .layout-3 > :first-child.filters-col { display: none; }
   .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
-  .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid4, .grid4.vstats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid4.vstats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .grid4.vstats > :last-child { grid-column: 1 / -1; }
+  .grid4.vstats .stat { padding: 14px; }
   .grid5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .grid6, .grid6.c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .grid6.keep6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

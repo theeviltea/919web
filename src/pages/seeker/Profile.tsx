@@ -5,6 +5,8 @@ import { fieldByKey, occupationRows } from '../../data/registration';
 import { city } from '../../data/asset';
 import { AvailCard, AvailModal } from './Feed';
 import { PhotoViewer } from './People';
+import { VideoGrid, VideoPlayer } from '../../ui/video';
+import { useNavigate } from 'react-router-dom';
 import { Btn, Card, FRAMES, H2, Icon, Initials, Pill, TierBadge, Toggle, useToast } from '../../ui/kit';
 
 export function SeekerProfilePage() {
@@ -12,6 +14,9 @@ export function SeekerProfilePage() {
   const toast = useToast();
   const p = s.profile;
   const [viewer, setViewer] = useState<number | null>(null);
+  const [player, setPlayer] = useState<number | null>(null);
+  const nav = useNavigate();
+  const videos = [...(p.video ? [{ ...p.video, views: p.stats.videoViews }] : []), ...(s.plan === 'max' ? (p.moreVideos ?? []) : [])];
   const photos = p.photos.map((x) => x.source);
   const frame = s.plan === 'max' ? s.look.frame : undefined;
   const c = completeness(p);
@@ -104,18 +109,10 @@ export function SeekerProfilePage() {
               ))}
             </div>
           </Card>
-          {p.video ? (
+          {videos.length ? (
             <Card>
-              <H2 right={<span className="s14 muted">{p.stats.videoViews} views</span>}>Video presentation</H2>
-              <div className="rel ovh" style={{ height: 300, borderRadius: 20 }}>
-                <img src={p.video.poster} alt="" className="ph-cover" style={{ height: '100%' }} />
-                <span className="play">
-                  <span style={{ width: 64, height: 64 }}>
-                    <Icon name="play-filled" size={26} />
-                  </span>
-                </span>
-                <span className="dur">{p.video.duration}</span>
-              </div>
+              <H2 right={<span className="s14 muted">{videos.length === 1 ? `${p.stats.videoViews} views` : `${videos.length} videos · ${p.stats.videoViews} views`}</span>}>{videos.length === 1 ? 'Video presentation' : 'Videos'}</H2>
+              <VideoGrid videos={videos} onOpen={setPlayer} />
             </Card>
           ) : null}
           <Card>
@@ -206,6 +203,7 @@ export function SeekerProfilePage() {
       </div>
       {viewer !== null ? <PhotoViewer photos={photos} index={viewer} title={`${p.firstName} ${p.lastName}`} onClose={() => setViewer(null)} /> : null}
       <AvailModal />
+      {player !== null ? <VideoPlayer videos={videos} index={player} owner={{ name: `${p.firstName} ${p.lastName}`, subtitle: 'Your video presentation', avatar: p.photo, tier: s.plan, own: true, onReplace: () => (setPlayer(null), nav('/profile/general')) }} onClose={() => setPlayer(null)} /> : null}
     </main>
   );
 }

@@ -9,6 +9,7 @@ import { FEMALE, MALE } from '../../data/asset';
 import pattern from '../../assets/img/pattern-3d.jpg';
 import { Link } from '../../lib/links';
 import { candidateCard, FrameRing } from '../../ui/domain';
+import { VideoGrid, VideoPlayer } from '../../ui/video';
 import { Btn, Card, Crumbs, H2, Icon, Initials, Modal, Pill, TierBadge, useToast, type IconName } from '../../ui/kit';
 
 const byName = (n: string) => candidates.find((c) => c.name === n)!;
@@ -230,6 +231,7 @@ export function People() {
 export function ProfileView({ c, actions, back }: { c: Candidate; actions: ReactNode; back: { to: string; label: string } }) {
   const p = profileOf(c);
   const [viewer, setViewer] = useState<number | null>(null);
+  const [player, setPlayer] = useState<number | null>(null);
   // Web: a gallery of distinct licensed photos of the same gender, starting with the profile photo.
   const media = mediaOf(c, c.gender === 'male' ? MALE : FEMALE);
   const gallery = media.photos;
@@ -292,25 +294,7 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
           {videos.length ? (
             <Card>
               <H2 right={<span className="s14 muted">{videos.length === 1 ? `${videos[0].views} views` : `${videos.length} videos`}</span>}>{videos.length === 1 ? 'Video presentation' : 'Videos'}</H2>
-              <MediaGrid n={videos.length} kind="video">
-                {(i, more) => (
-                  <div key={i} className="rel ovh" style={{ width: '100%', height: '100%', borderRadius: 'inherit' }}>
-                    <img src={videos[i].poster} alt="" className="ph-cover" style={{ height: '100%' }} />
-                    {more ? (
-                      <span className="more">+{more}</span>
-                    ) : (
-                      <>
-                        <span className="play">
-                          <span style={i === 0 ? { width: 64, height: 64 } : { width: 44, height: 44 }}>
-                            <Icon name="play-filled" size={i === 0 ? 26 : 18} />
-                          </span>
-                        </span>
-                        <span className="dur">{videos[i].duration}</span>
-                      </>
-                    )}
-                  </div>
-                )}
-              </MediaGrid>
+              <VideoGrid videos={videos} onOpen={setPlayer} main="Presentation" />
             </Card>
           ) : null}
           {p.experience.length ? (
@@ -386,6 +370,7 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
         </aside>
       </div>
       {viewer !== null ? <PhotoViewer photos={gallery} index={viewer} title={p.fullName} onClose={() => setViewer(null)} /> : null}
+      {player !== null ? <VideoPlayer videos={videos} index={player} owner={{ name: p.fullName, subtitle: `${c.role} · ${c.city}`, avatar: c.photo, tier: c.tier }} onClose={() => setPlayer(null)} /> : null}
     </main>
   );
 }

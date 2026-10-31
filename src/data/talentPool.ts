@@ -243,12 +243,16 @@ export function matchesCandidate(c: Candidate, q: string) {
 }
 
 // ---------- Profile media (web demo of content load) ----------
-// Layla shows the maximum (20 photos, 5 videos), Sara has 1 photo and Karim 2, so the layouts for every count can be checked.
+// Layla shows the maximum (20 photos, 5 videos), Sara has 1 photo and Karim 2; Karim, Nadia, Olivia, Zara and Layla have 1–5 videos,
+// so the layouts for every count can be checked.
 // Galleries reuse the licensed stock set of the same gender, starting with the profile photo.
 const mediaByName: Record<string, { photos: number; videos: number }> = {
   'Layla H.': { photos: 20, videos: 5 },
   'Sara M.': { photos: 1, videos: 0 },
   'Karim A.': { photos: 2, videos: 1 },
+  'Nadia R.': { photos: 6, videos: 2 },
+  'Olivia G.': { photos: 5, videos: 3 },
+  'Zara K.': { photos: 6, videos: 4 },
 };
 export type ProfileVideo = { poster: Img; duration: string; views: string };
 export function mediaOf(c: Candidate, pool: Img[]): { photos: Img[]; videos: ProfileVideo[] } {
@@ -258,7 +262,7 @@ export function mediaOf(c: Candidate, pool: Img[]): { photos: Img[]; videos: Pro
   const videos = Array.from({ length: m.videos }, (_, i) => ({
     poster: set[(i + 1) % set.length],
     duration: i === 0 && c.video ? c.video.duration : durations[(i * 3 + c.age) % durations.length],
-    views: i === 0 && c.video ? c.video.views : `${((i * 13 + c.age) % 40) / 10 + 0.4}k`,
+    views: i === 0 && c.video ? c.video.views : `${(((i * 13 + c.age) % 40) / 10 + 0.4).toFixed(1)}k`,
   }));
   return { photos, videos };
 }

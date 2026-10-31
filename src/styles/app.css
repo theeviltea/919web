@@ -151,8 +151,8 @@ ul { list-style: none; }
 /* ---------- hero ---------- */
 .hero { position: relative; z-index: 0; overflow: hidden; height: 112px; border-radius: 28px; background: var(--primary); padding: 0 28px 0 36px; color: #fff; display: flex; align-items: center; gap: 32px; }
 .hero > img.bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; opacity: .35; }
-.hero .t { flex: none; width: 300px; }
-.hero .search { flex: 1; height: 56px; padding: 0; color: var(--text-light-secondary); }
+.hero .t { flex: none; min-width: 300px; }
+.hero .search { flex: 1; min-width: 0; height: 56px; padding: 0; color: var(--text-light-secondary); }
 .hero .search .q { flex: 1; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
 .hero .city { flex: none; display: flex; align-items: center; gap: 8px; padding: 0 16px; color: var(--text-headline); font-weight: 600; border-left: 1px solid var(--stroke); height: 28px; }
 .filterbtn { flex: none; height: 56px; padding: 0 18px; border-radius: 16px; background: var(--urgent); color: #18191C; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }

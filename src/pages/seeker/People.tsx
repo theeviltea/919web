@@ -1,7 +1,7 @@
 // People (job seeker): top profiles in the field, Max strip, how to join the top, everyone. Person profile page.
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import { candidates, findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '../../data/talentPool';
+import { candidates, findCandidate, mediaOf, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '../../data/talentPool';
 import { profileOf, sphereChip } from '../../data/candidateProfile';
 import { completeness, useSeeker } from '../../data/seeker';
 import { tierRank } from '../../data/tiers';
@@ -124,8 +124,9 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
   const p = profileOf(c);
   const [viewer, setViewer] = useState<number | null>(null);
   // Web: a gallery of distinct licensed photos of the same gender, starting with the profile photo.
-  const pool = c.gender === 'male' ? MALE : FEMALE;
-  const gallery = [c.photo, ...pool.filter((x) => x !== c.photo)].slice(0, Math.max(3, Math.min(p.gallery.length, pool.length)));
+  const media = mediaOf(c, c.gender === 'male' ? MALE : FEMALE);
+  const gallery = media.photos;
+  const videos = media.videos;
   const linkHref = (v: string) => (v.startsWith('@') ? `https://instagram.com/${v.slice(1)}` : `https://${v.replace(/^https?:\/\//, '')}`);
   return (
     <main className="page">
@@ -135,34 +136,46 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
           <Card>
             <H2
               right={
-                <button className="link s14" onClick={() => setViewer(0)}>
-                  See all
-                </button>
+                gallery.length > 5 ? (
+                  <button className="link s14" onClick={() => setViewer(0)}>
+                    See all {gallery.length}
+                  </button>
+                ) : undefined
               }
             >
               Photos <span className="muted semi">{gallery.length}</span>
             </H2>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gridTemplateRows: '220px 220px', gap: 10 }}>
-              {gallery.slice(0, 5).map((g, i) => (
-                <button key={i} className="rel ovh" onClick={() => setViewer(i)} style={{ gridRow: i === 0 ? '1 / 3' : undefined, borderRadius: i === 0 ? 24 : 18 }} aria-label={`Photo ${i + 1}`}>
-                  <img src={g} alt="" className="ph-cover" style={{ height: '100%' }} />
-                  {i === 4 && gallery.length > 5 ? <span className="play" style={{ background: 'rgba(14,26,43,.5)', color: '#fff', fontSize: 22, fontWeight: 700 }}>+{gallery.length - 5}</span> : null}
+            <MediaGrid n={gallery.length} kind="photo" stage={gallery[0]}>
+              {(i, more) => (
+                <button key={i} className="rel ovh" onClick={() => setViewer(i)} style={{ width: '100%', height: '100%', borderRadius: 'inherit' }} aria-label={more ? `Show all ${gallery.length} photos` : `Photo ${i + 1}`}>
+                  <img src={gallery[i]} alt="" className="ph-cover" style={{ height: '100%' }} />
+                  {more ? <span className="more">+{more}</span> : null}
                 </button>
-              ))}
-            </div>
+              )}
+            </MediaGrid>
           </Card>
-          {c.video ? (
+          {videos.length ? (
             <Card>
-              <H2 right={<span className="s14 muted">{c.video.views} views</span>}>Video presentation</H2>
-              <div className="rel ovh" style={{ height: 320, borderRadius: 20 }}>
-                <img src={c.photo} alt="" className="ph-cover" style={{ height: '100%' }} />
-                <span className="play">
-                  <span style={{ width: 64, height: 64 }}>
-                    <Icon name="play-filled" size={26} />
-                  </span>
-                </span>
-                <span className="dur">{c.video.duration}</span>
-              </div>
+              <H2 right={<span className="s14 muted">{videos.length === 1 ? `${videos[0].views} views` : `${videos.length} videos`}</span>}>{videos.length === 1 ? 'Video presentation' : 'Videos'}</H2>
+              <MediaGrid n={videos.length} kind="video">
+                {(i, more) => (
+                  <div key={i} className="rel ovh" style={{ width: '100%', height: '100%', borderRadius: 'inherit' }}>
+                    <img src={videos[i].poster} alt="" className="ph-cover" style={{ height: '100%' }} />
+                    {more ? (
+                      <span className="more">+{more}</span>
+                    ) : (
+                      <>
+                        <span className="play">
+                          <span style={i === 0 ? { width: 64, height: 64 } : { width: 44, height: 44 }}>
+                            <Icon name="play-filled" size={i === 0 ? 26 : 18} />
+                          </span>
+                        </span>
+                        <span className="dur">{videos[i].duration}</span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </MediaGrid>
             </Card>
           ) : null}
           {p.experience.length ? (
@@ -271,6 +284,50 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
   );
 }
 
+/**
+ * Desktop media layout that adapts to the count:
+ * 1–2 photos: centred on a blurred full-width stage; 3–4: one even row of 3:4 tiles; 5+: a big tile and four small, the last one shows "+N".
+ * Videos: 1 is a wide player, 2–3 an even row, 4 a 2×2 grid, 5+ the same mosaic as photos.
+ */
+function MediaGrid({ n, kind, stage, children }: { n: number; kind: 'photo' | 'video'; stage?: string; children: (i: number, more: number) => ReactNode }) {
+  const cell = (i: number, style: CSSProperties, more = 0) => (
+    <div key={i} style={{ borderRadius: i === 0 && n >= 5 ? 24 : 18, overflow: 'hidden', minWidth: 0, ...style }}>
+      {children(i, more)}
+    </div>
+  );
+  if (n >= 5) {
+    const rows = kind === 'photo' ? '220px 220px' : '170px 170px';
+    return (
+      <div className="media-grid mosaic" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gridTemplateRows: rows, gap: 10 }}>
+        {[0, 1, 2, 3, 4].map((i) => cell(i, i === 0 ? { gridRow: '1 / 3' } : {}, i === 4 && n > 5 ? n - 5 : 0))}
+      </div>
+    );
+  }
+  if (kind === 'photo' && n <= 2) {
+    // 1–2 photos: a full-width stage with the first photo blurred behind, so the card never looks half empty.
+    return (
+      <div className="media-stage">
+        {stage ? <img src={stage} alt="" aria-hidden="true" className="media-stage-bg" /> : null}
+        {Array.from({ length: n }, (_, i) => cell(i, { height: '100%', aspectRatio: '3 / 4', boxShadow: '0 12px 32px rgba(14,26,43,.25)' }))}
+      </div>
+    );
+  }
+  if (kind === 'photo') {
+    return (
+      <div className="media-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: 10 }}>
+        {Array.from({ length: n }, (_, i) => cell(i, { aspectRatio: '3 / 4' }))}
+      </div>
+    );
+  }
+  if (n === 1) return <div className="media-grid">{cell(0, { height: 320, borderRadius: 20 })}</div>;
+  const cols = n === 4 ? 2 : n;
+  return (
+    <div className="media-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 10 }}>
+      {Array.from({ length: n }, (_, i) => cell(i, { aspectRatio: '16 / 10' }))}
+    </div>
+  );
+}
+
 export function PhotoViewer({ photos, index, title, onClose }: { photos: string[]; index: number; title: string; onClose: () => void }) {
   const [i, setI] = useState(index);
   const go = (d: number) => setI((i + d + photos.length) % photos.length);
@@ -298,9 +355,9 @@ export function PhotoViewer({ photos, index, title, onClose }: { photos: string[
           <Icon name={`chevron-${d}`} size={28} />
         </button>
       ))}
-      <div className="row center g10" style={{ position: 'absolute', left: 0, right: 0, bottom: 24 }}>
+      <div className="row g10 thumbs" style={{ position: 'absolute', left: 24, right: 24, bottom: 24 }}>
         {photos.map((p, k) => (
-          <button key={k} onClick={() => setI(k)} aria-label={`Photo ${k + 1}`}>
+          <button key={k} onClick={() => setI(k)} aria-label={`Photo ${k + 1}`} ref={k === i ? (el) => el?.scrollIntoView({ block: 'nearest', inline: 'center' }) : undefined} style={{ flex: 'none' }}>
             <img src={p} alt="" style={{ width: 56, height: 74, borderRadius: 12, objectFit: 'cover', opacity: k === i ? 1 : 0.5, outline: k === i ? '2px solid #fff' : undefined, outlineOffset: 2 }} />
           </button>
         ))}

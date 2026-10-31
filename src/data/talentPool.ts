@@ -241,3 +241,24 @@ export function matchesCandidate(c: Candidate, q: string) {
   const hay = `${c.name} ${c.role} ${talentSphereLabels[c.sphere]}`.toLowerCase();
   return words.every((w) => hay.includes(w.length > 4 ? w.slice(0, -1) : w));
 }
+
+// ---------- Profile media (web demo of content load) ----------
+// Layla shows the maximum (20 photos, 5 videos), Sara has 1 photo and Karim 2, so the layouts for every count can be checked.
+// Galleries reuse the licensed stock set of the same gender, starting with the profile photo.
+const mediaByName: Record<string, { photos: number; videos: number }> = {
+  'Layla H.': { photos: 20, videos: 5 },
+  'Sara M.': { photos: 1, videos: 0 },
+  'Karim A.': { photos: 2, videos: 1 },
+};
+export type ProfileVideo = { poster: Img; duration: string; views: string };
+export function mediaOf(c: Candidate, pool: Img[]): { photos: Img[]; videos: ProfileVideo[] } {
+  const set = [c.photo, ...pool.filter((x) => x !== c.photo)];
+  const m = mediaByName[c.name] ?? { photos: Math.min(set.length, 3 + (c.age % 3)), videos: c.video ? 1 : 0 };
+  const photos = Array.from({ length: m.photos }, (_, i) => set[i % set.length]);
+  const videos = Array.from({ length: m.videos }, (_, i) => ({
+    poster: set[(i + 1) % set.length],
+    duration: i === 0 && c.video ? c.video.duration : durations[(i * 3 + c.age) % durations.length],
+    views: i === 0 && c.video ? c.video.views : `${((i * 13 + c.age) % 40) / 10 + 0.4}k`,
+  }));
+  return { photos, videos };
+}

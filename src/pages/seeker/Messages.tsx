@@ -5,7 +5,7 @@ import { useSeeker, type Msg, type Thread } from '../../data/seeker';
 import { findVacancy } from '../../data/mock';
 import { contractTypes } from '../../data/dictionaries';
 import { Link } from '../../lib/links';
-import { Bubble, ChatMenu, clock, Composer, PhotoBubble, REPORT_REASONS, ThreadRow, useStickBottom } from '../../ui/chat';
+import { Bubble, ChatMenu, clock, Composer, PhotoBubble, REPORT_REASONS, ThreadRow, useStickBottom, useChatPattern } from '../../ui/chat';
 import { money } from '../../ui/domain';
 import { Btn, Empty, Icon, Initials, Modal, ModalHead, SearchBox, Tabs, useToast } from '../../ui/kit';
 
@@ -116,6 +116,7 @@ export function SeekerMessages() {
   const toast = useToast();
   const [tab, setTab] = useState<'active' | 'archive'>('active');
   const [q, setQ] = useState('');
+  const pattern = useChatPattern();
   const [report, setReport] = useState(false);
   const [del, setDel] = useState(false);
   const t = id ? s.thread(id) : undefined;
@@ -203,7 +204,7 @@ export function SeekerMessages() {
                   <Icon name="chevron-right" size={18} />
                 </Link>
               ) : null}
-              <div className="msgs" ref={msgsRef}>
+              <div className="msgs" ref={msgsRef} style={pattern}>
                 {t.messages.map((m) => (
                   <MsgView key={m.id} m={m} />
                 ))}

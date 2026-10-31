@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEmployer, type EmpThread } from '../../data/employer';
 import { fallbackChat, type EmpMsg } from '../../data/empChat';
-import { Bubble, ChatMenu, clock, Composer, PhotoBubble, REPORT_REASONS, ThreadRow, useStickBottom } from '../../ui/chat';
+import { Bubble, ChatMenu, clock, Composer, PhotoBubble, REPORT_REASONS, ThreadRow, useStickBottom, useChatPattern } from '../../ui/chat';
 import { Avatar, Btn, Empty, Icon, Modal, ModalHead, SearchBox, Tabs, TierBadge, useToast } from '../../ui/kit';
 import { findCandidate } from '../../data/talentPool';
 
@@ -77,6 +77,7 @@ export function EmployerMessages() {
   const toast = useToast();
   const [box, setBox] = useState<Box>('active');
   const [q, setQ] = useState('');
+  const pattern = useChatPattern();
   const [ctx, setCtx] = useState<string | null>(null);
   const [modal, setModal] = useState<'report' | 'block' | 'delete' | null>(null);
   const [reason, setReason] = useState<string | null>(null);
@@ -169,7 +170,7 @@ export function EmployerMessages() {
                   ))}
                 </div>
               ) : null}
-              <div className="msgs" ref={ref}>
+              <div className="msgs" ref={ref} style={pattern}>
                 {msgs.map((m) => (
                   <EMsg key={m.id} m={m} onCtx={setCtx} />
                 ))}

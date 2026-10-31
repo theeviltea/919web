@@ -1,6 +1,7 @@
 // Messenger building blocks shared by job seeker and employer chats.
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from '../lib/links';
+import { CHAT_TILE, chatTileXml } from '../lib/chatPattern';
 import { Icon, useOutside, type IconName } from './kit';
 
 export const clock = () => {
@@ -125,3 +126,26 @@ export function useStickBottom(dep: unknown) {
 }
 
 export const REPORT_REASONS = ['Asked me to pay a fee or deposit', 'Fake vacancy or company', 'Inappropriate messages', 'Unsafe working conditions', 'Pay or conditions differ from the vacancy', 'Something else'];
+
+/** The 919 chat pattern behind messages (same tile as the app), recoloured for light and dark. */
+export function useChatPattern() {
+  const read = () => {
+    const cs = getComputedStyle(document.documentElement);
+    const fg = cs.getPropertyValue('--chat-pattern').trim() || '#E1E6ED';
+    const bg = cs.getPropertyValue('--back').trim() || '#ECEFF4';
+    return `url("data:image/svg+xml,${encodeURIComponent(chatTileXml(fg, bg))}")`;
+  };
+  const [bg, setBg] = useState(read);
+  useEffect(() => {
+    const update = () => setBg(read());
+    const mo = new MutationObserver(update);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener('change', update);
+    return () => {
+      mo.disconnect();
+      mq.removeEventListener('change', update);
+    };
+  }, []);
+  return { backgroundImage: bg, backgroundSize: `${CHAT_TILE.width}px ${CHAT_TILE.height}px` };
+}

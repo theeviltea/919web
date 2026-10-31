@@ -192,8 +192,21 @@ ul { list-style: none; }
 .fsection { display: flex; flex-direction: column; gap: 10px; padding: 18px 0; border-top: 1px solid var(--divider); }
 .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 200; min-height: 52px; padding: 0 20px; border-radius: 16px; background: var(--inverse); color: var(--on-inverse); display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; box-shadow: 0 12px 32px rgba(14,26,43,.24); animation: fade .15s; }
 .menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; min-width: 240px; background: var(--surface); border-radius: 18px; padding: 8px; box-shadow: 0 16px 40px rgba(14,26,43,.18); display: flex; flex-direction: column; }
-.menu a, .menu button { height: 44px; padding: 0 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: var(--text-headline); font-size: 15px; font-weight: 600; text-align: left; }
-.menu a:hover, .menu button:hover { background: var(--back); }
+.menu.account { width: 300px; padding: 8px; border-radius: 22px; border: 1px solid var(--divider); box-shadow: 0 20px 48px rgba(14,26,43,.22); gap: 0; }
+.menu-head { display: flex; align-items: center; gap: 12px; padding: 10px 10px 12px; }
+.menu-sep { height: 1px; background: var(--divider); margin: 6px 4px; }
+.menu-list { display: flex; flex-direction: column; gap: 2px; }
+.menu .mi { height: 44px; padding: 0 10px; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: var(--text-headline); font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; width: 100%; }
+.menu .mi:hover, .menu .mi:focus-visible { background: var(--back); }
+.menu .mi-ico { flex: none; width: 32px; height: 32px; border-radius: 10px; background: var(--back); display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
+.menu .mi:hover .mi-ico { background: var(--surface); }
+.menu .mi.danger { color: var(--danger-text); }
+.menu .mi.danger .mi-ico { background: var(--danger-back); color: var(--danger-text); }
+.menu-theme { padding: 6px 6px 8px; display: flex; flex-direction: column; gap: 8px; }
+.menu-label { padding: 0 4px; font-size: 12px; font-weight: 700; color: var(--text-body); }
+.menu-theme .tab { height: 34px; font-size: 13px; padding: 0 10px; }
+.menu > a, .menu > button { height: 44px; padding: 0 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: var(--text-headline); font-size: 15px; font-weight: 600; text-align: left; }
+.menu > a:hover, .menu > button:hover { background: var(--back); }
 @keyframes fade { from { opacity: 0; } }
 @keyframes slidein { from { transform: translateX(40px); opacity: 0; } }
 

@@ -48,47 +48,62 @@ function TabBar({ items }: { items: Item[] }) {
 
 function ThemeSwitch() {
   const [pref, setPref] = useTheme();
-  const opts: { k: ThemePref; label: string }[] = [
-    { k: 'light', label: 'Light' },
-    { k: 'dark', label: 'Dark' },
-    { k: 'system', label: 'System' },
+  const opts: { k: ThemePref; label: string; icon: IconName }[] = [
+    { k: 'light', label: 'Light', icon: 'sparkles' },
+    { k: 'dark', label: 'Dark', icon: 'moon' },
+    { k: 'system', label: 'System', icon: 'settings' },
   ];
   return (
-    <div className="tabs full" role="radiogroup" aria-label="Theme" style={{ margin: '4px 4px 8px' }}>
-      {opts.map((o) => (
-        <button key={o.k} role="radio" aria-checked={pref === o.k} className={`tab${pref === o.k ? ' on' : ''}`} style={{ height: 34, fontSize: 13 }} onClick={() => setPref(o.k)}>
-          {o.label}
-        </button>
-      ))}
+    <div className="menu-theme" onClick={(e) => e.stopPropagation()}>
+      <span className="menu-label">Theme</span>
+      <div className="tabs full" role="radiogroup" aria-label="Theme">
+        {opts.map((o) => (
+          <button key={o.k} role="radio" aria-checked={pref === o.k} className={`tab${pref === o.k ? ' on' : ''}`} onClick={() => setPref(o.k)}>
+            {o.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
-function AccountMenu({ trigger, links }: { trigger: React.ReactNode; links: { to?: string; label: string; icon: IconName; onClick?: () => void; danger?: boolean }[] }) {
+type MenuLink = { to?: string; label: string; icon: IconName; onClick?: () => void; danger?: boolean };
+
+function AccountMenu({ trigger, head, links, signOut }: { trigger: React.ReactNode; head: React.ReactNode; links: MenuLink[]; signOut: MenuLink }) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const ref = useOutside<HTMLDivElement>(open, close);
+  const item = (l: MenuLink) =>
+    l.to ? (
+      <Link key={l.label} to={l.to} className="mi">
+        <span className="mi-ico">
+          <Icon name={l.icon} size={18} />
+        </span>
+        <span className="grow">{l.label}</span>
+        <Icon name="chevron-right" size={16} style={{ color: 'var(--text-light-secondary)' }} />
+      </Link>
+    ) : (
+      <button key={l.label} className={`mi${l.danger ? ' danger' : ''}`} onClick={l.onClick}>
+        <span className="mi-ico">
+          <Icon name={l.icon} size={18} />
+        </span>
+        <span className="grow">{l.label}</span>
+      </button>
+    );
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: 'flex' }}>
         {trigger}
       </button>
       {open ? (
-        <div className="menu" role="menu" onClick={close}>
+        <div className="menu account" role="menu" onClick={close}>
+          <div className="menu-head">{head}</div>
+          <div className="menu-sep" />
+          <div className="menu-list">{links.map(item)}</div>
+          <div className="menu-sep" />
           <ThemeSwitch />
-          {links.map((l) =>
-            l.to ? (
-              <Link key={l.label} to={l.to}>
-                <Icon name={l.icon} />
-                {l.label}
-              </Link>
-            ) : (
-              <button key={l.label} onClick={l.onClick} style={l.danger ? { color: 'var(--danger-text)' } : undefined}>
-                <Icon name={l.icon} />
-                {l.label}
-              </button>
-            ),
-          )}
+          <div className="menu-sep" />
+          <div className="menu-list">{item(signOut)}</div>
         </div>
       ) : null}
     </div>
@@ -172,8 +187,20 @@ export function SeekerShell() {
                 { to: '/profile/edit', label: 'Edit profile', icon: 'edit' },
                 { to: s.plan === 'free' ? '/profile/plans' : '/profile/subscription', label: 'Subscription', icon: 'star' },
                 { to: '/profile/settings', label: 'Settings', icon: 'settings' },
-                { label: 'Log out', icon: 'logout', onClick: out, danger: true },
               ]}
+              signOut={{ label: 'Log out', icon: 'logout', onClick: out, danger: true }}
+              head={
+                <>
+                  <Avatar src={p.photo} size={44} />
+                  <div className="grow">
+                    <div className="row g6 s15 strong">
+                      {p.firstName} {p.lastName}
+                      <TierBadge tier={s.plan} size={16} />
+                    </div>
+                    <div className="small muted ellipsis">{s.plan === 'max' ? 'Max plan' : s.plan === 'premium' ? 'Premium plan' : 'Free plan'} · {p.city}</div>
+                  </div>
+                </>
+              }
             />
           </>
         }
@@ -229,8 +256,26 @@ export function EmployerShell() {
                 { to: '/company/team', label: 'Team and roles', icon: 'users' },
                 { to: '/company/subscription', label: 'Subscription', icon: 'star' },
                 { to: '/company/settings', label: 'Settings', icon: 'settings' },
-                { label: `Log out · ${me.firstName}`, icon: 'logout', onClick: out, danger: true },
               ]}
+              signOut={{ label: 'Log out', icon: 'logout', onClick: out, danger: true }}
+              head={
+                <>
+                  <Initials text={company.initials} size={44} radius={14} />
+                  <div className="grow">
+                    <div className="row g6 s15 strong">
+                      {e.info.name || company.name}
+                      {e.verified ? (
+                        <span style={{ color: 'var(--primary)', display: 'flex' }}>
+                          <Icon name="verified" size={16} />
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="small muted ellipsis">
+                      {me.firstName} {me.lastName} · {me.title}
+                    </div>
+                  </div>
+                </>
+              }
             />
           </>
         }

@@ -253,7 +253,7 @@ export function Team() {
       >
         <div>
           {e.members.map((m) => (
-            <div key={m.id} className="row g14" style={{ padding: '14px 0', borderTop: '1px solid var(--divider)' }}>
+            <div key={m.id} className="row g14 sep" style={{ padding: '14px 0' }}>
               <Avatar src={m.photo} size={48} />
               <div className="grow">
                 <div className="s15 strong">

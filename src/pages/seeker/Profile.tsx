@@ -118,7 +118,7 @@ export function SeekerProfilePage() {
                 Experience <span className="muted semi">{totalExperience(p.experience)}</span>
               </H2>
               {p.experience.map((j) => (
-                <div key={j.id} className="row top g14" style={{ padding: '14px 0', borderTop: '1px solid var(--divider)' }}>
+                <div key={j.id} className="row top g14 sep" style={{ padding: '14px 0' }}>
                   <Initials text={j.company.slice(0, 2).toUpperCase()} size={44} />
                   <div>
                     <div className="strong">{j.role}</div>

@@ -71,7 +71,7 @@ export function CompanyPage() {
               {links
                 .filter(([, , v]) => v)
                 .map(([a, b, v]) => (
-                  <div key={a} className="row g14" style={{ padding: '14px 0', borderTop: '1px solid var(--divider)' }}>
+                  <div key={a} className="row g14 sep" style={{ padding: '14px 0' }}>
                     <Initials text={a} size={40} />
                     <div>
                       <div className="small muted">{b}</div>

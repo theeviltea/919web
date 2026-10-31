@@ -72,7 +72,7 @@ export function CompanyHome() {
             </H2>
             <div>
               {e.vacancies.slice(0, 5).map((v) => (
-                <Link key={v.id} to={`/my-vacancy/${v.id}`} className="row g14" style={{ padding: '12px 0', borderTop: '1px solid var(--divider)', color: 'var(--text-headline)' }}>
+                <Link key={v.id} to={`/my-vacancy/${v.id}`} className="row g14 sep" style={{ padding: '12px 0', color: 'var(--text-headline)' }}>
                   <img src={v.cover} alt="" className="ph-cover" style={{ width: 48, height: 48, borderRadius: 14, flex: 'none' }} />
                   <div className="grow">
                     <div className="s15 semi ellipsis">{v.title}</div>
@@ -129,7 +129,7 @@ export function CompanyHome() {
             </H2>
             <div>
               {e.members.map((m) => (
-                <div key={m.id} className="row g12" style={{ padding: '12px 0', borderTop: '1px solid var(--divider)' }}>
+                <div key={m.id} className="row g12 sep" style={{ padding: '12px 0' }}>
                   <Avatar src={m.photo} size={44} />
                   <div className="grow">
                     <div className="s15 semi">

@@ -252,6 +252,9 @@ ul { list-style: none; }
 .snav a.active, .snav [data-to].active { background: var(--primary-secondary); color: var(--link); font-weight: 700; }
 .snav .grp { padding: 12px 12px 6px; font-size: 12px; font-weight: 700; color: var(--text-body); }
 .srow { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--divider); color: var(--text-headline); width: 100%; text-align: left; }
+.sep { border-top: 1px solid var(--divider); }
+/* Lists: a divider only between rows, never above the first row of a block. */
+.srow:not(.srow + .srow), .kv:not(.kv + .kv), .sep:not(.sep + .sep) { border-top: none; }
 .srow .ico { flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--back); display: flex; align-items: center; justify-content: center; }
 .kv { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--divider); font-size: 15px; }
 .kv span:first-child { color: var(--text-body); } .kv span:last-child { font-weight: 700; text-align: right; }
@@ -352,6 +355,13 @@ ul { list-style: none; }
   .tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
   .stat .n { font-size: 24px; }
 }
+
+/* ---------- settings rows with a wide control (theme switch) ---------- */
+.srow > .grow { min-width: 0; }
+@media (max-width: 860px) { .srow:has(> .tabs) { flex-wrap: wrap; } .srow > .tabs { flex: 1 1 100%; margin-left: 54px; } .srow > .tabs .tab { flex: 1; } }
+
+/* ---------- edit profile header ---------- */
+@media (max-width: 860px) { .edit-head { flex-wrap: wrap; } .edit-head-act { flex-basis: 100%; } .edit-head-act .btn { width: 100%; } }
 
 /* ---------- profile view header (People → person, Talent → candidate) ---------- */
 .prof-head { display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 24px; align-items: center; }

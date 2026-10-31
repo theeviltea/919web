@@ -142,9 +142,9 @@ export function EditHub() {
   return (
     <SeekerLayout active="Edit profile">
       <Card pad={28} style={{ gap: 20 }}>
-        <div className="row g20 wrap">
+        <div className="row g20 edit-head">
           <Avatar src={p.photo} size={88} ring={s.plan === 'max' ? 'var(--gold)' : undefined} />
-          <div className="grow">
+          <div className="grow" style={{ minWidth: 0 }}>
             <div className="display d3">
               {p.firstName} {p.lastName}
             </div>
@@ -152,9 +152,11 @@ export function EditHub() {
               {p.occupations.flatMap((o) => o.roles).slice(0, 2).join(' · ')} · {p.city}
             </div>
           </div>
-          <Btn kind="secondary" h={44} icon="view" to="/seeker/profile">
-            View my profile
-          </Btn>
+          <span className="edit-head-act">
+            <Btn kind="secondary" h={44} icon="view" to="/seeker/profile">
+              View my profile
+            </Btn>
+          </span>
         </div>
         <div className="inset" style={{ padding: '16px 18px', borderRadius: 18 }}>
           <div className="row between s15 strong">
@@ -382,7 +384,7 @@ function JobModal({ job, onClose, onSave, onDelete }: { job?: Job; onClose: () =
 
 function Item({ ini, title, sub, meta, extra, onEdit }: { ini: string; title: string; sub: string; meta?: string; extra?: ReactNode; onEdit?: () => void }) {
   return (
-    <div className="row g14" style={{ padding: '14px 0', borderTop: '1px solid var(--divider)' }}>
+    <div className="row g14 sep" style={{ padding: '14px 0' }}>
       <Initials text={ini} size={44} />
       <div className="grow">
         <div className="row g8 s15 strong">

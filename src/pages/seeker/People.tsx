@@ -212,7 +212,7 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
                 Experience <span className="muted semi">{p.total}</span>
               </H2>
               {p.experience.map((x) => (
-                <div key={x.role + x.place} className="row top g14" style={{ padding: '14px 0', borderTop: '1px solid var(--divider)' }}>
+                <div key={x.role + x.place} className="row top g14 sep" style={{ padding: '14px 0' }}>
                   <Initials text={x.place.slice(0, 2).toUpperCase()} size={44} />
                   <div>
                     <div className="strong">{x.role}</div>

@@ -7,6 +7,7 @@ import { tierRank } from '../../data/tiers';
 import { allCountries, citiesFor } from '../../data/registration';
 import { toggleIn } from '../../data/filters';
 import { candidateCard, Hero } from '../../ui/domain';
+import { Link } from '../../lib/links';
 import { ProfileView } from '../seeker/People';
 import { Btn, CheckRow, Drawer, FlashTile, H2, Icon, Modal, ModalHead, Pill, Select, Tabs, useToast, Avatar, Field } from '../../ui/kit';
 
@@ -171,8 +172,10 @@ export function FindTalent() {
         onFilters={() => setDrawer(true)}
         filters={countTalentFilters(filters)}
       />
+      <div className="layout-r w340 mt24">
+        <div className="stack" style={{ minWidth: 0 }}>
       {searching ? (
-        <div className="stack mt24">
+        <div className="stack">
           <div className="row between wrap g12">
             <h2 className="s20 strong">
               {results.length} profiles{query ? ` for “${query}”` : ''}
@@ -191,11 +194,11 @@ export function FindTalent() {
               ))}
             </div>
           ) : null}
-          <div className="grid6">{results.slice(0, 36).map((c) => card(c))}</div>
+          <div className="grid6 c4">{results.slice(0, 36).map((c) => card(c))}</div>
         </div>
       ) : (
         <>
-          <div className="row between wrap g12 mt24">
+          <div className="row between wrap g12">
             <Tabs<View>
               items={[
                 {
@@ -248,7 +251,7 @@ export function FindTalent() {
                   >
                     {r.title} <span className="muted semi">{r.list.length}</span>
                   </H2>
-                  <div className="grid6 mt16">{r.list.slice(0, 6).map((c) => card(c))}</div>
+                  <div className="grid6 c4 mt16">{r.list.slice(0, 8).map((c) => card(c))}</div>
                 </div>
               ))
             : null}
@@ -261,8 +264,8 @@ export function FindTalent() {
                     <H2>
                       {r.title} <span className="muted semi">{r.list.length}</span>
                     </H2>
-                    <div className="grid6 mt16">
-                      {r.list.slice(0, 6).map((c) => (
+                    <div className="grid6 c4 mt16">
+                      {r.list.slice(0, 8).map((c) => (
                         <div key={c.id} onClick={() => nav(`/talent/${c.id}`)} style={{ cursor: 'pointer' }}>
                           <VideoCard c={c} />
                         </div>
@@ -295,13 +298,148 @@ export function FindTalent() {
                   </button>
                 ))}
               </div>
-              <div className="grid6 mt16">{todayList.map((c) => card(c, true))}</div>
+              <div className="grid6 c4 mt16">{todayList.map((c) => card(c, true))}</div>
             </>
           ) : null}
         </>
       )}
+        </div>
+        <TalentAside />
+      </div>
       {drawer ? <TalentFiltersDrawer value={filters} onClose={() => setDrawer(false)} onApply={(f) => (setFilters(f), setDrawer(false))} /> : null}
     </main>
+  );
+}
+
+// ---------- right column: Urgent hiring, plan, verification ----------
+function TalentAside() {
+  const e = useEmployer();
+  const toast = useToast();
+  const [pay, setPay] = useState(false);
+  const live = e.vacancies.filter((v) => v.status === 'active');
+  const target = live.find((v) => !v.urgentLeft);
+  const running = live.find((v) => v.urgentLeft);
+  return (
+    <aside className="stack wide-only" style={{ position: 'sticky', top: 96 }}>
+      <section className="card" style={{ background: 'var(--attention-back)', gap: 12 }}>
+        <div className="row g12">
+          <span className="tile" style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--urgent)', color: '#18191C', flex: 'none' }}>
+            <Icon name="fire" size={22} />
+          </span>
+          <div className="grow">
+            <div className="s16 strong">Need people fast?</div>
+            <div className="small muted">Urgent hiring · $2.99 for 24 h</div>
+          </div>
+        </div>
+        <p className="s14 lh primary-text">Your vacancy goes to the top of the feed and search with a hot Urgent badge.</p>
+        {target ? (
+          <>
+            <div className="row g10" style={{ padding: 10, borderRadius: 14, background: 'var(--surface)' }}>
+              <img src={target.cover} alt="" className="ph-cover" style={{ width: 40, height: 40, borderRadius: 12, flex: 'none' }} />
+              <div className="grow" style={{ minWidth: 0 }}>
+                <div className="s14 semi ellipsis">{target.title}</div>
+                <div className="small muted ellipsis">{target.meta}</div>
+              </div>
+            </div>
+            <Btn kind="urgent" h={44} full icon="fire" onClick={() => setPay(true)}>
+              Make it urgent
+            </Btn>
+          </>
+        ) : (
+          <Btn kind="secondary" h={44} full icon="add" to="/post">
+            Post a vacancy
+          </Btn>
+        )}
+        {running ? (
+          <div className="small muted">
+            <b style={{ color: 'var(--text-headline)' }}>{running.title}</b> is urgent · {running.urgentLeft}
+          </div>
+        ) : null}
+      </section>
+      {e.plan === 'premium' ? (
+        <section className="card" style={{ background: 'var(--panel-dark)', color: '#fff', gap: 12 }}>
+          <div className="row between">
+            <Pill tone="orange" icon="star">
+              Premium
+            </Pill>
+            <span className="small" style={{ color: 'var(--panel-dark-muted)' }}>
+              renews 9 Nov
+            </span>
+          </div>
+          {(['Message any candidate directly', 'Unlimited active vacancies', 'See who is available today'] as const).map((x) => (
+            <div key={x} className="row g10 s14">
+              <span style={{ color: 'var(--urgent)', display: 'flex' }}>
+                <Icon name="check" size={18} />
+              </span>
+              {x}
+            </div>
+          ))}
+          <Link to="/company/subscription" className="s14 strong" style={{ color: 'var(--urgent)' }}>
+            Manage subscription →
+          </Link>
+        </section>
+      ) : (
+        <section className="card" style={{ background: 'var(--panel-dark)', color: '#fff', gap: 12 }}>
+          <Pill tone="orange" icon="star">
+            919 Premium
+          </Pill>
+          <div className="s16 strong">Message any candidate and post more vacancies</div>
+          <p className="s14 lh" style={{ color: 'var(--panel-dark-muted)' }}>
+            On Free you can only chat with people who applied, and keep 1 active vacancy.
+          </p>
+          <Btn kind="premium" h={44} full to="/company/subscription">
+            Get Premium · $3.99 / month
+          </Btn>
+        </section>
+      )}
+      {e.verified ? (
+        <section className="card" style={{ gap: 10 }}>
+          <div className="row g12">
+            <span className="tile" style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--primary-secondary)', color: 'var(--link)', flex: 'none' }}>
+              <Icon name="verified" size={22} />
+            </span>
+            <div className="grow">
+              <div className="s16 strong">Verified company</div>
+              <div className="small muted">Trade licence approved</div>
+            </div>
+          </div>
+          <p className="s14 lh muted">The badge shows on your vacancies and chats. You can message people from the Today tab.</p>
+        </section>
+      ) : (
+        <section className="card" style={{ gap: 12 }}>
+          <div className="row g12">
+            <span className="tile" style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--back)', color: 'var(--text-primary)', flex: 'none' }}>
+              <Icon name="shield" size={22} />
+            </span>
+            <div className="grow">
+              <div className="s16 strong">Get verified</div>
+              <div className="small muted">{e.licence.status === 'review' ? 'Licence on review' : 'Upload your trade licence'}</div>
+            </div>
+          </div>
+          <p className="s14 lh muted">Verified companies get a badge and can message people who are available today.</p>
+          <Btn kind="secondary" h={44} full to="/company/verification">
+            {e.licence.status === 'review' ? 'Check status' : 'Verify company'}
+          </Btn>
+        </section>
+      )}
+      {pay && target ? (
+        <Modal onClose={() => setPay(false)} label="Urgent hiring" width={480}>
+          <ModalHead lead={<span className="tile" style={{ width: 52, height: 52, background: 'var(--urgent)', color: '#18191C', borderRadius: 16 }}><Icon name="fire" size={26} /></span>} title="Urgent hiring · $2.99" sub={`${target.title} is pinned to the top of the feed and search for 24 hours and gets a hot Urgent badge.`} onClose={() => setPay(false)} />
+          <Btn
+            kind="urgent"
+            h={56}
+            full
+            onClick={() => {
+              e.updateVacancy(target.id, { urgentLeft: '24 h left', urgentInfo: { left: '24 h left · started just now', progress: 1, views: 0, applicants: 0 } });
+              setPay(false);
+              toast('Urgent is on for 24 hours', 'fire');
+            }}
+          >
+            Pay $2.99
+          </Btn>
+        </Modal>
+      ) : null}
+    </aside>
   );
 }
 

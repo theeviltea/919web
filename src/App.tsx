@@ -7,6 +7,7 @@ import { EmployerProvider } from './data/employer';
 import { applyTheme } from './lib/theme';
 import { ToastProvider } from './ui/kit';
 import { ErrorBoundary } from './ui/ErrorBoundary';
+import { AppPromoSheet } from './ui/appPromo';
 import { EmployerShell, GuestShell, SeekerShell } from './layout/Shell';
 import { About, Code, EmailSignIn, Forgot, NewPassword, Register, RolePick, SignIn } from './pages/auth/Auth';
 import { Details, Media, Occupation, Review } from './pages/onboarding/Seeker';
@@ -54,6 +55,7 @@ export default function App() {
     <ErrorBoundary>
     <Router>
       <ScrollTop />
+      <AppPromoSheet />
       <ToastProvider>
         <SessionProvider>
           <SignupProvider>

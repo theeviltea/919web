@@ -15,6 +15,28 @@ export function SeekerProfilePage() {
   const photos = p.photos.map((x) => x.source);
   const frame = s.plan === 'max' ? s.look.frame : undefined;
   const c = completeness(p);
+  const toggles = (
+    <>
+      <AvailCard />
+      <Card pad={20} style={{ gap: 12 }}>
+        <div className="row g12">
+          <span className="tile" style={{ width: 40, height: 40, background: 'var(--back)', borderRadius: 12 }}>
+            <Icon name={s.hidden ? 'eye-off' : 'view'} />
+          </span>
+          <div className="grow">
+            <div className="strong">Visible to employers</div>
+            <div className="small muted">Show my profile in talent search</div>
+          </div>
+          <Toggle on={!s.hidden} label="Visible to employers" onChange={(v) => (s.setHidden(!v), toast(v ? 'Profile is visible' : 'Profile hidden from search', v ? 'view' : 'eye-off'))} />
+        </div>
+        {c.percent < 100 ? (
+          <div className="small muted">
+            Profile {c.percent}% complete · {c.next?.hint}
+          </div>
+        ) : null}
+      </Card>
+    </>
+  );
   return (
     <main className="page">
       <section className="card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
@@ -49,6 +71,9 @@ export function SeekerProfilePage() {
           </div>
         </div>
       </section>
+      <div className="narrow-only mt16">
+        <div className="stack">{toggles}</div>
+      </div>
       <div className="grid4 mt16">
         {(
           [
@@ -133,24 +158,7 @@ export function SeekerProfilePage() {
           ) : null}
         </div>
         <aside className="stack">
-          <AvailCard />
-          <Card pad={20} style={{ gap: 12 }}>
-            <div className="row g12">
-              <span className="tile" style={{ width: 40, height: 40, background: 'var(--back)', borderRadius: 12 }}>
-                <Icon name={s.hidden ? 'eye-off' : 'view'} />
-              </span>
-              <div className="grow">
-                <div className="strong">Visible to employers</div>
-                <div className="small muted">Show my profile in talent search</div>
-              </div>
-              <Toggle on={!s.hidden} label="Visible to employers" onChange={(v) => (s.setHidden(!v), toast(v ? 'Profile is visible' : 'Profile hidden from search', v ? 'view' : 'eye-off'))} />
-            </div>
-            {c.percent < 100 ? (
-              <div className="small muted">
-                Profile {c.percent}% complete · {c.next?.hint}
-              </div>
-            ) : null}
-          </Card>
+          <div className="stack wide-only">{toggles}</div>
           <Card style={{ gap: 12 }}>
             <H2>Languages</H2>
             {p.languages.map((l) => (

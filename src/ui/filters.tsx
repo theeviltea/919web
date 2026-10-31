@@ -4,7 +4,7 @@ import { contractTypes, spheres, vacancySpheres } from '../data/dictionaries';
 import { applyFilters, emptyFilters, toggleIn, type VacancyFilters } from '../data/filters';
 import { allCountries, citiesFor } from '../data/registration';
 import type { ContractType, Vacancy } from '../data/types';
-import { Btn, Card, CheckRow, Drawer, H2, Icon, Select } from './kit';
+import { Btn, Card, CheckRow, Drawer, Field, H2, Icon, Select } from './kit';
 
 const CONTRACTS = Object.keys(contractTypes) as ContractType[];
 
@@ -46,9 +46,9 @@ export function FiltersBody({ value, onChange, source }: { value: VacancyFilters
             </button>
           ))}
         </div>
-        <div className="grid2" style={{ marginTop: 10, gap: 8 }}>
-          <input className="search inset" style={{ height: 44, fontSize: 14, border: 'none', borderRadius: 12 }} placeholder="From, AED" inputMode="numeric" value={f.min ?? ''} onChange={(e) => set({ min: e.target.value.replace(/\D/g, '') || undefined })} aria-label="Pay from, AED" />
-          <input className="search inset" style={{ height: 44, fontSize: 14, border: 'none', borderRadius: 12 }} placeholder="To, AED" inputMode="numeric" value={f.max ?? ''} onChange={(e) => set({ max: e.target.value.replace(/\D/g, '') || undefined })} aria-label="Pay to, AED" />
+        <div className="grid2" style={{ marginTop: 12, gap: 8 }}>
+          <Field label="From, AED" inputMode="numeric" value={f.min ?? ''} onChange={(v) => set({ min: v.replace(/\D/g, '') || undefined })} />
+          <Field label="To, AED" inputMode="numeric" value={f.max ?? ''} onChange={(v) => set({ max: v.replace(/\D/g, '') || undefined })} />
         </div>
       </div>
     </>

@@ -83,8 +83,17 @@ export function AppPromoSheet({ force = false }: { force?: boolean }) {
           <img className="apsheet-bg" src={pattern} alt="" />
           <span className="apsheet-ring r1" />
           <span className="apsheet-ring r2" />
-          <span className="apsheet-icon">
-            <Logo h={24} color="#fff" />
+          <span className="apsheet-phone">
+            <span className="apsheet-island" />
+            <span className="apsheet-screen">
+              <span className="apsheet-icon">
+                <Logo h={20} color="#fff" />
+              </span>
+              <span className="apsheet-line w1" />
+              <span className="apsheet-line w2" />
+              <span className="apsheet-tile" />
+              <span className="apsheet-tile" />
+            </span>
           </span>
           <span className="apsheet-chip c1">
             <span className="apsheet-dot" style={{ background: 'var(--urgent)', color: '#18191C' }}>
@@ -108,13 +117,6 @@ export function AppPromoSheet({ force = false }: { force?: boolean }) {
             919 is better in the app
           </h2>
           <p>Get invitations and messages the moment they arrive, record your video presentation and apply in one tap.</p>
-          <div className="apsheet-meta">
-            <span>
-              <Icon name="star" size={16} /> 4.8
-            </span>
-            <span>Free</span>
-            <span>iOS and Android</span>
-          </div>
           {installed ? (
             <a className="btn primary h56 apsheet-cta" href={APP_OPEN_URL} onClick={close}>
               Open the app
@@ -128,6 +130,7 @@ export function AppPromoSheet({ force = false }: { force?: boolean }) {
           <button className="apsheet-skip" onClick={close}>
             Continue in the browser
           </button>
+          <div className="apsheet-note">Available on iOS and Android</div>
         </div>
       </section>
     </div>

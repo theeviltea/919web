@@ -183,7 +183,7 @@ export function EmployerMessages() {
               />
             </>
           ) : (
-            <div style={{ margin: 'auto', padding: 24 }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, ...pattern }}>
               <Empty icon="message" title="Pick a chat" text="Chats with candidates open here: the direct chat and one per vacancy." />
             </div>
           )}

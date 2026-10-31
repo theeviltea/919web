@@ -230,7 +230,7 @@ export function SeekerMessages() {
               />
             </>
           ) : (
-            <div style={{ margin: 'auto', padding: 24 }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, ...pattern }}>
               <Empty icon="message" title="Pick a chat" text="Chats with employers open here. You can send photos, video and your contacts." />
             </div>
           )}

@@ -219,15 +219,11 @@ export function AvailCard() {
   if (!s.availEligible && !s.avail.on) return null;
   if (s.avail.on)
     return (
-      <section className="card" style={{ background: 'var(--urgent)', color: '#18191C', gap: 10 }}>
-        <div className="row g12">
-          <FlashTile size={40} />
-          <div className="grow">
-            <div className="s16 strong">You’re available today</div>
-            <div className="small" style={{ marginTop: 2 }}>
-              {slotsLabel(s.avail.slots)} · {untilLabel(s.avail.until)}
-            </div>
-          </div>
+      <section className="card" style={{ background: 'var(--urgent)', color: '#18191C', gap: 14, padding: 20 }}>
+        <div className="row between">
+          <span className="tile" style={{ width: 40, height: 40, borderRadius: 12, background: '#18191C', color: 'var(--urgent)' }}>
+            <Icon name="flash" size={20} />
+          </span>
           <Toggle
             on
             label="Available today"
@@ -237,7 +233,13 @@ export function AvailCard() {
             }}
           />
         </div>
-        <div className="small" style={{ opacity: 0.85 }}>
+        <div>
+          <div className="s17 strong">You’re available today</div>
+          <div className="s14" style={{ marginTop: 4 }}>
+            {slotsLabel(s.avail.slots)} · {untilLabel(s.avail.until)}
+          </div>
+        </div>
+        <div className="small" style={{ paddingTop: 12, borderTop: '1px solid rgba(24,25,28,0.12)', opacity: 0.8 }}>
           {statsLine(s.avail)}
         </div>
       </section>

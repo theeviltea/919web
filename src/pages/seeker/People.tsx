@@ -131,6 +131,34 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
   return (
     <main className="page">
       <Crumbs back={back} items={[p.fullName]} />
+      <section className="card prof-head mt16">
+        <div className="row g20">
+          <span className="rel" style={{ display: 'inline-flex', borderRadius: '50%', padding: c.frame ? 4 : 0, flex: 'none', isolation: 'isolate' }}>
+            {c.frame ? <FrameRing frame={c.frame} radius={999} /> : null}
+            <img src={c.photo} alt="" className="avatar prof-ava" />
+          </span>
+          <div className="grow" style={{ minWidth: 0 }}>
+            <div className="row g8 display d3 prof-name">
+              {p.fullName}
+              <TierBadge tier={c.tier} size={22} />
+            </div>
+            <div className="s15 muted" style={{ marginTop: 4 }}>
+              {c.age} years · {c.gender === 'female' ? 'Female' : 'Male'} · {c.city}, {c.country}
+            </div>
+            <div className="row wrap g6" style={{ marginTop: 10 }}>
+              <Pill tone="blue">{sphereChip(c)}</Pill>
+              {c.today ? (
+                <Pill tone="urgent" icon="flash">
+                  Available today · {c.today}
+                </Pill>
+              ) : null}
+            </div>
+          </div>
+        </div>
+        <div className="stack prof-actions" style={{ gap: 8 }}>
+          {actions}
+        </div>
+      </section>
       <div className="layout-r mt16">
         <div className="stack">
           <Card>
@@ -210,35 +238,6 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
           </Card>
         </div>
         <aside className="stack">
-          <section className="card rel" style={{ isolation: 'isolate' }}>
-            <div className="row g16">
-              <span className="rel" style={{ display: 'inline-flex', borderRadius: '50%', padding: c.frame ? 3 : 0, background: c.frame ? undefined : 'transparent' }}>
-                {c.frame ? <FrameRing frame={c.frame} radius={999} /> : null}
-                <img src={c.photo} alt="" className="avatar" style={{ width: 72, height: 72 }} />
-              </span>
-              <div className="grow">
-                <div className="row g6 s20 strong" style={{ fontSize: 22 }}>
-                  {p.fullName}
-                  <TierBadge tier={c.tier} size={20} />
-                </div>
-                <div className="s14 muted" style={{ marginTop: 4 }}>
-                  {c.age} years · {c.gender === 'female' ? 'Female' : 'Male'}
-                </div>
-                <div className="s14 muted">
-                  {c.city}, {c.country}
-                </div>
-              </div>
-            </div>
-            <div className="row wrap g6">
-              <Pill tone="blue">{sphereChip(c)}</Pill>
-              {c.today ? (
-                <Pill tone="urgent" icon="flash">
-                  Available today · {c.today}
-                </Pill>
-              ) : null}
-            </div>
-            {actions}
-          </section>
           <Card>
             <H2>About</H2>
             <p className="primary-text lh">{p.about}</p>

@@ -353,6 +353,13 @@ ul { list-style: none; }
   .stat .n { font-size: 24px; }
 }
 
+/* ---------- profile view header (People → person, Talent → candidate) ---------- */
+.prof-head { display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 24px; align-items: center; }
+.prof-ava { width: 96px; height: 96px; }
+.prof-name { font-size: 26px; flex-wrap: wrap; }
+@media (max-width: 1100px) { .prof-head { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+@media (max-width: 860px) { .prof-ava { width: 72px; height: 72px; } .prof-name { font-size: 21px; } .prof-head > .row { align-items: flex-start; } }
+
 /* ---------- mobile web: "get the app" bottom sheet ---------- */
 .apsheet-wrap { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
 .apsheet-backdrop { position: absolute; inset: 0; background: rgba(14,26,43,.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: ap-fade .3s ease both; }

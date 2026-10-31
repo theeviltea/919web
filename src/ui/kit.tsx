@@ -387,6 +387,14 @@ export function ModalHead({ title, sub, onClose, lead }: { title: ReactNode; sub
 
 export function Drawer({ children, onClose, label }: { children: ReactNode; onClose: () => void; label: string }) {
   useEsc(onClose);
+  // The page behind must not scroll: on phones it drags the browser bars and shifts the drawer.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
   return (
     <>
       <div className="drawer-scrim" onClick={onClose} />

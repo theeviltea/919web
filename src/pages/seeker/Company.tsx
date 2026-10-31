@@ -24,11 +24,11 @@ export function CompanyPage() {
       <Crumbs back={{ to: '/seeker', label: 'Vacancies' }} items={[c.name]} />
       <section className="card mt16" style={{ padding: 0, overflow: 'hidden', gap: 0, borderRadius: 28 }}>
         <img src={city.dubai1} alt="" className="ph-cover" style={{ height: 200 }} />
-        <div className="row g20 wrap" style={{ position: 'relative', zIndex: 1, padding: '0 32px 28px', marginTop: -48, alignItems: 'flex-end' }}>
+        <div className="row g20 wrap" style={{ position: 'relative', zIndex: 1, padding: '0 32px 28px', marginTop: -48, alignItems: 'flex-start' }}>
           <span className="ini" style={{ width: 112, height: 112, borderRadius: 28, fontSize: 34, border: '4px solid var(--surface)' }}>
             {c.initials}
           </span>
-          <div className="grow" style={{ minWidth: 220, paddingBottom: 4 }}>
+          <div className="grow hdr-text" style={{ minWidth: 220 }}>
             <div className="row g10 display d3">
               {c.name}
               {c.verified ? (
@@ -46,9 +46,9 @@ export function CompanyPage() {
               ) : null}
             </div>
           </div>
-          <Btn kind="secondary" icon="share" onClick={() => (navigator.clipboard?.writeText(location.href).catch(() => undefined), toast('Link copied', 'link'))}>
+          <span className="hdr-act"><Btn kind="secondary" icon="share" onClick={() => (navigator.clipboard?.writeText(location.href).catch(() => undefined), toast('Link copied', 'link'))}>
             Share
-          </Btn>
+          </Btn></span>
         </div>
       </section>
       <div className="layout-r w380 mt24">

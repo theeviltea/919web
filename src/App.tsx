@@ -5,6 +5,7 @@ import { SignupProvider } from './data/signup';
 import { SeekerProvider } from './data/seeker';
 import { EmployerProvider } from './data/employer';
 import { applyTheme } from './lib/theme';
+import { releaseIfIdle } from './lib/scrollLock';
 import { ToastProvider } from './ui/kit';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { AppPromoSheet } from './ui/appPromo';
@@ -38,6 +39,7 @@ function ScrollTop() {
   // Braces matter: in the artifact viewer scrollTo returns a value, and React would treat it as a cleanup.
   useEffect(() => {
     window.scrollTo(0, 0);
+    releaseIfIdle();
   }, [pathname]);
   return null;
 }

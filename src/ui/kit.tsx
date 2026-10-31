@@ -1,6 +1,7 @@
 // Design-system atoms for the 919 web app (same look as the app and the "919 Web" design canvas).
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link } from '../lib/links';
+import { lockScroll } from '../lib/scrollLock';
 import { icons, type IconName } from '../lib/icon';
 import { LOGO_PATHS, LOGO_VIEWBOX } from '../lib/logo';
 import type { FrameStyle, Tier } from '../data/tiers';
@@ -339,16 +340,17 @@ export function SearchBox({ value, onChange, placeholder, inset, onEnter, autoFo
 
 // ---------- overlays ----------
 function useEsc(onClose: () => void) {
+  const ref = useRef(onClose);
+  ref.current = onClose;
   useEffect(() => {
-    const h = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const h = (e: KeyboardEvent) => e.key === 'Escape' && ref.current();
     window.addEventListener('keydown', h);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockScroll();
     return () => {
       window.removeEventListener('keydown', h);
-      document.body.style.overflow = prev;
+      unlock();
     };
-  }, [onClose]);
+  }, []);
 }
 
 export function Modal({ children, onClose, width = 520, label }: { children: ReactNode; onClose: () => void; width?: number; label: string }) {
@@ -386,15 +388,7 @@ export function ModalHead({ title, sub, onClose, lead }: { title: ReactNode; sub
 }
 
 export function Drawer({ children, onClose, label }: { children: ReactNode; onClose: () => void; label: string }) {
-  useEsc(onClose);
-  // The page behind must not scroll: on phones it drags the browser bars and shifts the drawer.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  useEsc(onClose); // also locks page scroll while open
   return (
     <>
       <div className="drawer-scrim" onClick={onClose} />

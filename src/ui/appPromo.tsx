@@ -2,11 +2,12 @@
 // Shows on phones once per visit (browser session). "Continue in the browser" or closing hides it until the next visit.
 // A browser can't tell whether the app is installed (iOS never says); on Android Chrome we ask getInstalledRelatedApps
 // and switch the button to "Open the app". Hidden inside the installed web app (standalone) and on desktop widths.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { stock } from '../data/asset';
 import { STORE_LINKS, APP_OPEN_URL } from '../lib/stores';
 import pattern from '../assets/img/pattern-3d.jpg';
 import { Icon, Logo } from './kit';
+import { lockScroll } from '../lib/scrollLock';
 
 const KEY = '919-app-sheet';
 type Platform = 'ios' | 'android' | 'other';
@@ -46,17 +47,17 @@ export function AppPromoSheet({ force = false }: { force?: boolean }) {
     return () => window.clearTimeout(t);
   }, [force]);
 
+  const closeRef = useRef<() => void>(() => undefined);
   useEffect(() => {
     if (state !== 'open') return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current();
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = prev;
+      unlock();
       window.removeEventListener('keydown', onKey);
     };
-  });
+  }, [state]);
 
   const close = () => {
     try {
@@ -67,6 +68,7 @@ export function AppPromoSheet({ force = false }: { force?: boolean }) {
     setState('closing');
     window.setTimeout(() => setState('hidden'), 320);
   };
+  closeRef.current = close;
 
   if (state === 'hidden') return null;
   const store = os === 'android' ? STORE_LINKS.android : STORE_LINKS.ios;

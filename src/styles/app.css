@@ -202,6 +202,18 @@ ul { list-style: none; }
 .menu .mi:hover .mi-ico { background: var(--surface); }
 .menu .mi.danger { color: var(--danger-text); }
 .menu .mi.danger .mi-ico { background: var(--danger-back); color: var(--danger-text); }
+.menu.notif-menu { width: 460px; padding: 0; border-radius: 22px; border: 1px solid var(--divider); box-shadow: 0 20px 48px rgba(14,26,43,.22); overflow: hidden; }
+.ndrop { display: flex; flex-direction: column; max-height: min(640px, calc(100vh - 110px)); }
+.ndrop .tabs { display: flex; width: 100%; overflow-x: auto; scrollbar-width: none; }
+.ndrop .tab { height: 32px; padding: 0 10px; font-size: 13px; flex: none; }
+.ndrop-list { flex: 1; overflow-y: auto; border-top: 1px solid var(--divider); }
+.ndrop-list .ngrp { padding: 12px 16px 6px; }
+.ndrop-list .notif { padding: 14px 16px 14px 22px; gap: 12px; }
+.ndrop-list .notif:hover { background: var(--back); }
+.ndrop-list .notif .unread { left: 8px; top: 26px; }
+.ndrop-list .card { box-shadow: none; padding: 32px 20px; }
+.ndrop-all { flex: none; height: 52px; display: flex; align-items: center; justify-content: center; gap: 6px; border-top: 1px solid var(--divider); font-size: 14px; font-weight: 700; color: var(--link); }
+.ndrop-all:hover { background: var(--back); }
 .menu-theme { padding: 6px 6px 8px; display: flex; flex-direction: column; gap: 8px; }
 .menu-label { padding: 0 4px; font-size: 12px; font-weight: 700; color: var(--text-body); }
 .menu-theme .tab { height: 34px; font-size: 13px; padding: 0 10px; }

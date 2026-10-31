@@ -6,6 +6,8 @@ import { useTheme, type ThemePref } from '../lib/theme';
 import { useSession } from '../data/session';
 import { useSeeker } from '../data/seeker';
 import { company, me, useEmployer } from '../data/employer';
+import { SeekerNotifications } from '../pages/seeker/Notifications';
+import { EmployerNotifications } from '../pages/employer/Company';
 import { Avatar, Btn, Icon, IconBtn, Initials, Logo, TierBadge, useOutside, type IconName } from '../ui/kit';
 
 type Item = { to: string; label: string; icon: IconName; badge?: number; end?: boolean };
@@ -75,7 +77,7 @@ function AccountMenu({ trigger, head, links, signOut }: { trigger: React.ReactNo
   const ref = useOutside<HTMLDivElement>(open, close);
   const item = (l: MenuLink) =>
     l.to ? (
-      <Link key={l.label} to={l.to} className="mi">
+      <Link key={l.label} to={l.to} className="mi" onClick={close}>
         <span className="mi-ico">
           <Icon name={l.icon} size={18} />
         </span>
@@ -107,6 +109,27 @@ function AccountMenu({ trigger, head, links, signOut }: { trigger: React.ReactNo
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** Bell: a dropdown with the notification centre on desktop, the full page on mobile. */
+function NotifMenu({ to, unread, children }: { to: string; unread: boolean; children: (close: () => void) => React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  const ref = useOutside<HTMLDivElement>(open, close);
+  return (
+    <>
+      <span className="mob-only">
+        <IconBtn icon="notification" label="Notifications" to={to} dot={unread} />
+      </span>
+      <div ref={ref} className="desk-only" style={{ position: 'relative' }}>
+        <button className="iconbtn" aria-label="Notifications" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(!open)} style={open ? { background: 'var(--primary-secondary)', color: 'var(--link)', borderColor: 'transparent' } : undefined}>
+          <Icon name="notification" />
+          {unread ? <span className="dot" /> : null}
+        </button>
+        {open ? <div className="menu notif-menu" role="dialog" aria-label="Notifications">{children(close)}</div> : null}
+      </div>
+    </>
   );
 }
 
@@ -170,7 +193,9 @@ export function SeekerShell() {
         items={items}
         right={
           <>
-            <IconBtn icon="notification" label="Notifications" to="/notifications" dot={s.unreadNotifs > 0} />
+            <NotifMenu to="/notifications" unread={s.unreadNotifs > 0}>
+              {(close) => <SeekerNotifications dropdown onClose={close} />}
+            </NotifMenu>
             <AccountMenu
               trigger={
                 <span className="row g10" style={{ height: 44, padding: '0 6px 0 4px', borderRadius: 999, border: `1px solid ${onProfile ? 'var(--stroke-blue)' : 'var(--stroke)'}`, background: onProfile ? 'var(--primary-secondary)' : 'var(--surface)' }}>
@@ -235,7 +260,9 @@ export function EmployerShell() {
                 Post a vacancy
               </Btn>
             </span>
-            <IconBtn icon="notification" label="Notifications" to="/hire/notifications" dot={e.unreadNotifs > 0} />
+            <NotifMenu to="/hire/notifications" unread={e.unreadNotifs > 0}>
+              {(close) => <EmployerNotifications dropdown onClose={close} />}
+            </NotifMenu>
             <AccountMenu
               trigger={
                 <span className="row g10" style={{ height: 44, padding: '0 12px 0 4px', borderRadius: 999, border: '1px solid var(--stroke)', background: 'var(--surface)' }}>

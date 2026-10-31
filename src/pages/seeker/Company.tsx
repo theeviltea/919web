@@ -24,7 +24,7 @@ export function CompanyPage() {
       <Crumbs back={{ to: '/seeker', label: 'Vacancies' }} items={[c.name]} />
       <section className="card mt16" style={{ padding: 0, overflow: 'hidden', gap: 0, borderRadius: 28 }}>
         <img src={city.dubai1} alt="" className="ph-cover" style={{ height: 200 }} />
-        <div className="row g20 wrap" style={{ padding: '0 32px 28px', marginTop: -48, alignItems: 'flex-end' }}>
+        <div className="row g20 wrap" style={{ position: 'relative', zIndex: 1, padding: '0 32px 28px', marginTop: -48, alignItems: 'flex-end' }}>
           <span className="ini" style={{ width: 112, height: 112, borderRadius: 28, fontSize: 34, border: '4px solid var(--surface)' }}>
             {c.initials}
           </span>

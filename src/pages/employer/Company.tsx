@@ -5,7 +5,7 @@ import { company, me, useEmployer, type EmpNotif, type EmpNotifKind } from '../.
 import pattern from '../../assets/img/pattern-3d.jpg';
 import { Link } from '../../lib/links';
 import { StatusPill } from './Vacancies';
-import { NGroup, NIcon, NotifRow } from '../../ui/notif';
+import { NGroup, NIcon, NotifLayout, NotifRow } from '../../ui/notif';
 import { Avatar, Btn, Card, Empty, H2, Icon, Pill, Tabs, useToast, type IconName } from '../../ui/kit';
 
 export function CompanyHome() {
@@ -181,7 +181,7 @@ const ICON: Partial<Record<EmpNotifKind, [IconName, string, string]>> = {
   availToday: ['flash', 'var(--urgent)', '#18191C'],
 };
 
-export function EmployerNotifications() {
+export function EmployerNotifications({ dropdown, onClose }: { dropdown?: boolean; onClose?: () => void } = {}) {
   const e = useEmployer();
   const nav = useNavigate();
   const toast = useToast();
@@ -190,6 +190,7 @@ export function EmployerNotifications() {
   const n = (g: EmpNotif['group']) => e.notifs.filter((x) => x.group === g).length || undefined;
   const go = (x: EmpNotif) => {
     e.readNotif(x.id);
+    onClose?.();
     const k = x.kind;
     if (k === 'availToday') nav('/hire?tab=today');
     else if (k === 'accepted') nav('/hire/messages');
@@ -203,10 +204,7 @@ export function EmployerNotifications() {
     ['Today', list.filter((x) => !x.unread && x.day === 'today')],
     ['Earlier', list.filter((x) => !x.unread && x.day === 'earlier')],
   ];
-  return (
-    <main className="page narrow">
-      <div className="row between wrap g16" style={{ marginTop: 8 }}>
-        <h1 className="display d2">Notifications</h1>
+  const tabs = (
         <Tabs<Tab>
           items={[
             { key: 'all', label: 'All' },
@@ -218,14 +216,15 @@ export function EmployerNotifications() {
           value={tab}
           onChange={setTab}
         />
-      </div>
-      <div className="mt24">
+  );
+  return (
+    <NotifLayout dropdown={dropdown} tabs={tabs} hasUnread={e.unreadNotifs > 0} onReadAll={() => e.readAllNotifs()} allTo="/hire/notifications" onClose={onClose}>
         {list.length ? (
-          <section className="card flat" style={{ padding: '0 0 6px', overflow: 'hidden' }}>
-            {groups.map(([g, items], gi) =>
+          <section className={dropdown ? '' : 'card flat'} style={{ padding: '0 0 6px', overflow: 'hidden' }}>
+            {groups.map(([g, items]) =>
               items.length ? (
                 <div key={g}>
-                  <NGroup right={gi === 0 ? <button className="link s14" onClick={() => e.readAllNotifs()}>Mark all as read</button> : undefined}>{g}</NGroup>
+                  <NGroup>{g}</NGroup>
                   {items.map((x) => {
                     const [ic, bg, fg] = ICON[x.kind] ?? (['notification', 'var(--back)', 'var(--text-primary)'] as [IconName, string, string]);
                     const lead = x.photo ? <Avatar src={x.photo} size={44} radius={14} /> : x.cover ? <img src={x.cover} alt="" className="ph-cover" style={{ width: 44, height: 44, borderRadius: 14, flex: 'none' }} /> : <NIcon icon={ic} bg={bg} fg={fg} />;
@@ -255,7 +254,6 @@ export function EmployerNotifications() {
         ) : (
           <Empty icon="notification" title="No notifications" text="New applicants, moderation results and messages show up here." />
         )}
-      </div>
-    </main>
+    </NotifLayout>
   );
 }

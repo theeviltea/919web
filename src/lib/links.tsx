@@ -13,14 +13,17 @@ type Props = {
   'aria-label'?: string;
   'aria-current'?: 'page' | undefined;
   title?: string;
+  /** Runs before navigating (e.g. closes a dropdown). */
+  onClick?: () => void;
 };
 
-function useGo(to: string) {
+function useGo(to: string, before?: () => void) {
   const nav = useNavigate();
   return {
     onClick: (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      before?.();
       nav(to);
     },
     onKeyDown: (e: KeyboardEvent) => {
@@ -32,8 +35,8 @@ function useGo(to: string) {
   };
 }
 
-function PreviewLink({ to, children, ...rest }: Props) {
-  const go = useGo(to);
+function PreviewLink({ to, children, onClick, ...rest }: Props) {
+  const go = useGo(to, onClick);
   return (
     <span role="link" tabIndex={0} data-to={to} {...go} {...rest}>
       {children}

@@ -21,7 +21,7 @@ export function SeekerProfilePage() {
         <div className="rel" style={{ height: 200, background: 'var(--primary)' }}>
           {s.plan === 'max' && s.look.header ? <img src={city.dubai2} alt="" className="ph-cover" style={{ height: '100%' }} /> : null}
         </div>
-        <div className="row g20 wrap" style={{ padding: '0 32px 28px', marginTop: -48, alignItems: 'flex-end' }}>
+        <div className="row g20 wrap" style={{ position: 'relative', zIndex: 1, padding: '0 32px 28px', marginTop: -48, alignItems: 'flex-end' }}>
           <span style={{ borderRadius: '50%', padding: frame ? 5 : 0, background: frame ? FRAMES[frame] : undefined, flex: 'none' }}>
             <img src={p.photo} alt="" className="avatar" style={{ width: 112, height: 112, border: '4px solid var(--surface)' }} />
           </span>

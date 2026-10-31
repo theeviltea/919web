@@ -6,6 +6,7 @@ import { SeekerProvider } from './data/seeker';
 import { EmployerProvider } from './data/employer';
 import { applyTheme } from './lib/theme';
 import { ToastProvider } from './ui/kit';
+import { ErrorBoundary } from './ui/ErrorBoundary';
 import { EmployerShell, GuestShell, SeekerShell } from './layout/Shell';
 import { About, Code, EmailSignIn, Forgot, NewPassword, Register, RolePick, SignIn } from './pages/auth/Auth';
 import { Details, Media, Occupation, Review } from './pages/onboarding/Seeker';
@@ -33,7 +34,10 @@ const Router = PREVIEW ? MemoryRouter : BrowserRouter;
 
 function ScrollTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Braces matter: in the artifact viewer scrollTo returns a value, and React would treat it as a cleanup.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 }
 
@@ -47,6 +51,7 @@ export default function App() {
     }
   }, []);
   return (
+    <ErrorBoundary>
     <Router>
       <ScrollTop />
       <ToastProvider>
@@ -127,5 +132,6 @@ export default function App() {
         </SessionProvider>
       </ToastProvider>
     </Router>
+    </ErrorBoundary>
   );
 }

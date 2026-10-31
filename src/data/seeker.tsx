@@ -60,6 +60,8 @@ export type SeekerProfile = {
   occupations: FieldEntry[];
   photos: Photo[];
   video?: { poster: Img; duration: string; progress?: number };
+  /** Max plan: up to 4 more videos besides the main presentation (5 in total). */
+  moreVideos?: { poster: Img; duration: string }[];
   about: string;
   languages: Language[];
   experience: Job[];
@@ -105,6 +107,10 @@ const demoProfile: SeekerProfile = {
   ],
   photos: [0, 1, 2, 3, 4, 5].map(p),
   video: { poster: asset('mock/people/p12.jpg'), duration: '0:42' },
+  moreVideos: [
+    { poster: asset('stock/f-pink-skirt.webp'), duration: '0:31' },
+    { poster: asset('stock/f-yellow-lips.webp'), duration: '0:55' },
+  ],
   about:
     'Five years in hospitality, from beach clubs in JBR to fine dining at DIFC. Calm under pressure, great with VIP guests. Also work as a commercial and runway model. Fluent in English and Russian, conversational Arabic. Available for evening and weekend work, can travel within the UAE.',
   languages: [
@@ -650,6 +656,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       occupations: draft.occupations,
       photos: draft.photos,
       video: draft.video,
+      moreVideos: base?.moreVideos,
       about: base?.about ?? '',
       languages: base?.languages ?? [],
       experience: base?.experience ?? [],

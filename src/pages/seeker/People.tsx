@@ -1,23 +1,160 @@
 // People (job seeker): top profiles in the field, Max strip, how to join the top, everyone. Person profile page.
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { candidates, findCandidate, mediaOf, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '../../data/talentPool';
-import { profileOf, sphereChip } from '../../data/candidateProfile';
+import { FULL_NAMES, profileOf, sphereChip } from '../../data/candidateProfile';
 import { completeness, useSeeker } from '../../data/seeker';
 import { tierRank } from '../../data/tiers';
 import { FEMALE, MALE } from '../../data/asset';
 import pattern from '../../assets/img/pattern-3d.jpg';
 import { Link } from '../../lib/links';
 import { candidateCard, FrameRing } from '../../ui/domain';
-import { Avatar, Btn, Card, Crumbs, H2, Icon, Initials, Modal, Pill, TierBadge, useToast } from '../../ui/kit';
+import { Btn, Card, Crumbs, H2, Icon, Initials, Modal, Pill, TierBadge, useToast, type IconName } from '../../ui/kit';
 
 const byName = (n: string) => candidates.find((c) => c.name === n)!;
 const TOP = ['Layla H.', 'Nadia R.', 'Sara M.', 'Olivia G.'].map(byName).filter(Boolean);
 const MAX_STRIP = ['Karim A.', 'Lina M.', 'Omar S.', 'Zara K.', 'Leo P.', 'Ali R.', 'Yusuf N.'].map(byName).filter(Boolean);
 
-export function People() {
-  const { profile } = useSeeker();
+function ProgressCard() {
+  const { profile, plan } = useSeeker();
   const comp = completeness(profile);
+  const ICONS: Record<string, IconName> = { photo: 'user', photos: 'camera', video: 'play', about: 'edit', languages: 'globe', experience: 'briefcase', education: 'file' };
+  const plus = Math.round(100 / comp.items.length);
+  if (comp.percent >= 100)
+    return (
+      <Card pad={20} style={{ gap: 14 }}>
+        <div className="row g14">
+          <span className="tile display" style={{ width: 60, height: 60, borderRadius: 18, background: 'var(--success-back)', color: 'var(--success-text)', fontSize: 18, flex: 'none' }}>
+            #7
+          </span>
+          <div className="grow">
+            <div className="s16 strong">Your place in Hospitality</div>
+            <div className="s14 muted lh" style={{ marginTop: 2 }}>
+              ↑ 3 this week. Profile 100% complete — keep it fresh with new photos.
+            </div>
+          </div>
+        </div>
+        {plan !== 'max' ? (
+          <Btn h={44} to="/profile/plans" kind="ink">
+            Go to the top with Max
+          </Btn>
+        ) : null}
+      </Card>
+    );
+  const steps = comp.items.filter((x) => !x.done).slice(0, 3);
+  return (
+    <Card pad={20} style={{ gap: 12 }}>
+      <div className="row g14">
+        <span className="tile s16 strong" style={{ width: 60, height: 60, borderRadius: '50%', flex: 'none', background: `conic-gradient(var(--primary) ${comp.percent * 3.6}deg, var(--back-darker) 0)` }}>
+          <span className="tile" style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--surface)' }}>{comp.percent}%</span>
+        </span>
+        <div className="grow">
+          <div className="s16 strong">
+            {steps.length} step{steps.length === 1 ? '' : 's'} to join the top
+          </div>
+          <div className="s14 muted lh" style={{ marginTop: 2 }}>
+            Profiles at 100% get up to 4× more invites in Hospitality.
+          </div>
+        </div>
+      </div>
+      {steps.map((x) => (
+        <Link key={x.key} to="/profile/general" className="row g10 inset" style={{ height: 48, padding: '0 12px', borderRadius: 14, color: 'var(--text-headline)' }}>
+          <span className="tile" style={{ width: 26, height: 26, borderRadius: 8, background: 'var(--primary-secondary)', color: 'var(--link)' }}>
+            <Icon name={ICONS[x.key] ?? 'add'} size={14} />
+          </span>
+          <span className="grow s14 semi">{x.hint}</span>
+          <span className="small strong" style={{ color: 'var(--success-text)' }}>
+            +{plus}%
+          </span>
+        </Link>
+      ))}
+      <Btn h={48} to="/profile/edit">
+        Complete my profile
+      </Btn>
+    </Card>
+  );
+}
+
+const TOP_META: Record<string, [number, string]> = { 'Layla H.': [12, 'EN · AR'], 'Nadia R.': [10, 'EN · FR · AR'], 'Sara M.': [9, 'EN · PT'], 'Olivia G.': [11, 'EN · RU'] };
+
+/** Top profiles in the seeker's field: the app's ranked carousel (big outlined numbers, photo cards). */
+function TopCarousel() {
+  const ref = useRef<HTMLDivElement>(null);
+  const by = (d: number) => ref.current?.scrollBy({ left: d * 230, behavior: 'smooth' });
+  return (
+    <section>
+      <div className="row g8 between">
+        <div>
+          <div className="row g8">
+            <h2 className="s20 strong">Top in Hospitality</h2>
+            <Pill tone="blue">Your field</Pill>
+          </div>
+          <div className="s14 muted" style={{ marginTop: 2 }}>
+            The most complete profiles this week
+          </div>
+        </div>
+        <div className="row g8 desk-only">
+          <button className="iconbtn soft" aria-label="Previous" onClick={() => by(-1)}>
+            <Icon name="chevron-left" />
+          </button>
+          <button className="iconbtn soft" aria-label="Next" onClick={() => by(1)}>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div className="topcar" ref={ref}>
+        {TOP.map((c, i) => {
+          const [ph, langs] = TOP_META[c.name] ?? [6, 'EN'];
+          return (
+            <Link key={c.id} to={`/people/${c.id}`} className="topcard" aria-label={`Number ${i + 1}: ${c.name}, ${c.role}`}>
+              <span className="topnum" aria-hidden="true">
+                {i + 1}
+              </span>
+              <span className="topimg">
+                <img src={c.photo} alt="" />
+                <span className="topgrad" />
+                <span className="toptags">
+                  <TierBadge tier={c.tier} size={24} />
+                  <span className="pill" style={{ background: 'var(--urgent)', color: '#18191C', height: 24 }}>
+                    <Icon name="check" size={12} />
+                    100%
+                  </span>
+                  {c.video ? (
+                    <span className="pill" style={{ marginLeft: 'auto', background: 'rgba(14,26,43,.55)', color: '#fff', height: 24 }}>
+                      <Icon name="play-filled" size={10} />
+                      {c.video.duration}
+                    </span>
+                  ) : null}
+                </span>
+                <span className="topinfo">
+                  <span className="s16 strong ellipsis" style={{ display: 'block' }}>
+                    {FULL_NAMES[c.name] ?? c.name}
+                  </span>
+                  <span className="small" style={{ opacity: 0.86 }}>
+                    {c.role} · {c.city}
+                  </span>
+                  <span className="row g10 small semi" style={{ marginTop: 6, opacity: 0.9 }}>
+                    <span className="row g4">
+                      <Icon name="camera" size={13} />
+                      {ph}
+                    </span>
+                    <span className="row g4">
+                      <Icon name="globe" size={13} />
+                      {langs}
+                    </span>
+                  </span>
+                </span>
+                <FrameRing frame={c.frame} radius={24} />
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+export function People() {
   const [sphere, setSphere] = useState<'all' | TalentSphere>('all');
   const [count, setCount] = useState(12);
   const everyone = useMemo(() => candidates.filter((x) => sphere === 'all' || x.sphere === sphere).sort((a, b) => tierRank(b.tier) - tierRank(a.tier)), [sphere]);
@@ -40,8 +177,10 @@ export function People() {
       </section>
       <div className="layout-r w360 mt24">
         <div className="stack">
-          <H2>Top in Hospitality</H2>
-          <div className="grid4">{TOP.map((c) => candidateCard(c, `/people/${c.id}`))}</div>
+          <TopCarousel />
+          <div className="narrow-only">
+            <ProgressCard />
+          </div>
           <section className="card" style={{ background: 'var(--panel-dark)', color: '#fff' }}>
             <div className="row g8">
               <TierBadge tier="max" size={22} />
@@ -79,40 +218,8 @@ export function People() {
             </Btn>
           ) : null}
         </div>
-        <aside className="stack">
-          <Card style={{ gap: 14 }}>
-            <H2>{comp.percent >= 100 ? 'Your profile is complete' : 'Get into the top'}</H2>
-            <div className="row g14">
-              <Avatar src={profile.photo} size={56} />
-              <div className="grow">
-                <div className="strong">
-                  {profile.firstName} {profile.lastName}
-                </div>
-                <div className="small muted">Profile {comp.percent}% complete</div>
-              </div>
-            </div>
-            <div style={{ height: 8, borderRadius: 999, background: 'var(--back-darker)' }}>
-              <div style={{ width: `${comp.percent}%`, height: 8, borderRadius: 999, background: 'var(--primary)' }} />
-            </div>
-            {(
-              [
-                ['play', 'Record a video presentation', '+20%'],
-                ['camera', 'Add 3 more photos', '+10%'],
-                ['globe', 'Add the languages you speak', '+10%'],
-              ] as const
-            ).map(([i, t, p]) => (
-              <Link key={t} to="/profile/general" className="row g12" style={{ color: 'var(--text-headline)' }}>
-                <span className="tile" style={{ width: 40, height: 40, background: 'var(--back)', borderRadius: 12 }}>
-                  <Icon name={i} />
-                </span>
-                <span className="grow s14 semi">{t}</span>
-                <Pill tone="green">{p}</Pill>
-              </Link>
-            ))}
-            <Btn h={44} to="/profile/plans" kind="ink">
-              Go to the top with Max
-            </Btn>
-          </Card>
+        <aside className="stack wide-only">
+          <ProgressCard />
         </aside>
       </div>
     </main>

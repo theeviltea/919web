@@ -80,7 +80,7 @@ export function Wizard({
             {children}
             <div className="row between g16 wrap">
               <span className="s14 muted">{footNote}</span>
-              <div className="row g10">
+              <div className="row g10 cta-bar">
                 {backTo ? (
                   <Btn kind="secondary" h={52} to={backTo}>
                     Back

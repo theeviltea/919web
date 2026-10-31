@@ -536,7 +536,7 @@ export function About() {
         <Select label="Country *" value={f.country} options={allCountries} onChange={(v) => setF({ ...f, country: v, city: '' })} />
         <Select label="City *" value={f.city} options={citiesFor(f.country)} onChange={(v) => setF({ ...f, city: v })} />
       </div>
-      <div className="row end">
+      <div className="row end cta-bar">
         <Btn
           h={56}
           style={{ width: 200 }}

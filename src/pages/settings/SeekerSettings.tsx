@@ -90,7 +90,7 @@ export function Sec({ title, right, children, gap = 16 }: { title: ReactNode; ri
 
 export function SaveBar({ onSave, disabled, onCancel }: { onSave: () => void; disabled?: boolean; onCancel?: () => void }) {
   return (
-    <div className="row end g10">
+    <div className="row end g10 cta-bar">
       {onCancel ? (
         <Btn kind="secondary" h={52} onClick={onCancel}>
           Cancel
@@ -263,13 +263,59 @@ export function EditGeneral() {
   const [about, setAbout] = useState(p.about);
   const [langs, setLangs] = useState(p.languages);
   const [video, setVideo] = useState(p.video);
+  const [more, setMore] = useState(p.moreVideos ?? []);
+  const max = s.plan === 'max';
+  const vids = [...(video ? [video] : []), ...(max ? more : [])];
+  const addVideo = (file?: File) => {
+    if (!file) return;
+    const v = { poster: p.photo ?? '', duration: '0:42' };
+    if (!video) setVideo(v);
+    else setMore([...more, v]);
+  };
+  const removeVideo = (i: number) => {
+    if (i === 0) {
+      setVideo(more[0]);
+      setMore(more.slice(1));
+    } else setMore(more.filter((_, k) => k !== i - 1));
+  };
   return (
     <SeekerLayout active="General">
       <Sec title="Photos" right={<span className="s14 strong muted">{photos.length} / {s.plan === 'free' ? 10 : 20}</span>}>
         <PhotoGrid photos={photos} onChange={setPhotos} max={s.plan === 'free' ? 10 : 20} cols={6} coverLabel="Cover" />
         <div className="small muted">The first photo is your cover.</div>
       </Sec>
-      <Sec title="Video presentation">
+      {max ? (
+        <Sec title="Videos" right={<span className="s14 strong muted">{vids.length} / 5</span>}>
+          <div className="vidgrid">
+            {vids.map((v, i) => (
+              <div key={i} className="rel ovh vidtile">
+                <img src={v.poster} alt="" className="ph-cover" style={{ height: '100%' }} />
+                <span className="play">
+                  <span style={{ width: 40, height: 40 }}>
+                    <Icon name="play-filled" size={16} />
+                  </span>
+                </span>
+                {i === 0 ? <span className="pill white vid-main">Main</span> : null}
+                <button aria-label={`Remove video ${i + 1}`} className="vid-x" onClick={() => removeVideo(i)}>
+                  <Icon name="trash" size={16} />
+                </button>
+                <span className="dur" style={{ left: 8, bottom: 8 }}>
+                  {v.duration}
+                </span>
+              </div>
+            ))}
+            {vids.length < 5 ? (
+              <label className="drop vidtile" style={{ fontSize: 14 }}>
+                <input type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => addVideo(e.target.files?.[0])} />
+                <Icon name="video" size={24} />
+                Add video
+              </label>
+            ) : null}
+          </div>
+          <div className="small muted">Max lets you add up to 5 videos, 60 seconds each. The first one is your main presentation.</div>
+        </Sec>
+      ) : (
+        <Sec title="Video presentation">
         <div className="row g16" style={{ alignItems: 'center' }}>
           {video ? (
             <div className="rel ovh" style={{ width: 120, height: 160, borderRadius: 16, flex: 'none' }}>
@@ -294,7 +340,10 @@ export function EditGeneral() {
             <div>
               <div className="s15 strong">{video ? `Your video · ${video.duration}` : 'No video yet'}</div>
               <div className="small muted lh" style={{ marginTop: 2 }}>
-                Up to 60 seconds. Employers watch it before they invite you.
+                Up to 60 seconds. Employers watch it before they invite you.{' '}
+                <Link to="/profile/plans" className="link">
+                  Max: up to 5 videos
+                </Link>
               </div>
             </div>
             <div className="vid-acts">
@@ -312,6 +361,7 @@ export function EditGeneral() {
           </div>
         </div>
       </Sec>
+      )}
       <Sec title="About me">
         <Field label="A few lines about you" value={about} onChange={setAbout} area maxLength={500} />
       </Sec>
@@ -347,7 +397,7 @@ export function EditGeneral() {
       </Sec>
       <SaveBar
         onSave={() => {
-          s.updateProfile({ photos, about, languages: langs, video });
+          s.updateProfile({ photos, about, languages: langs, video, moreVideos: more });
           toast('Changes saved');
         }}
       />

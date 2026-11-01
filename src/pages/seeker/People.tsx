@@ -10,7 +10,7 @@ import pattern from '../../assets/img/pattern-3d.jpg';
 import { Link } from '../../lib/links';
 import { candidateCard, FrameRing } from '../../ui/domain';
 import { VideoGrid, VideoPlayer } from '../../ui/video';
-import { Btn, Card, Crumbs, H2, Icon, Initials, Modal, Pill, TierBadge, useToast, type IconName } from '../../ui/kit';
+import { Btn, Card, Crumbs, H2, Icon, Initials, Pill, TierBadge, type IconName } from '../../ui/kit';
 
 const byName = (n: string) => candidates.find((c) => c.name === n)!;
 const TOP = ['Layla H.', 'Nadia R.', 'Sara M.', 'Olivia G.'].map(byName).filter(Boolean);
@@ -228,7 +228,7 @@ export function People() {
 }
 
 // ---------- Profile view (People → person, Talent → candidate) ----------
-export function ProfileView({ c, actions, back }: { c: Candidate; actions: ReactNode; back: { to: string; label: string } }) {
+export function ProfileView({ c, actions, back }: { c: Candidate; actions?: ReactNode; back: { to: string; label: string } }) {
   const p = profileOf(c);
   const [viewer, setViewer] = useState<number | null>(null);
   const [player, setPlayer] = useState<number | null>(null);
@@ -264,9 +264,15 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions: React
             </div>
           </div>
         </div>
-        <div className="stack prof-actions" style={{ gap: 8 }}>
-          {actions}
-        </div>
+        {actions ? (
+          <div className="stack prof-actions" style={{ gap: 8 }}>
+            {actions}
+          </div>
+        ) : (
+          <div className="prof-deco desk-only" aria-hidden="true">
+            <img src={pattern} alt="" />
+          </div>
+        )}
       </section>
       <div className="layout-r mt16">
         <div className="stack">
@@ -460,50 +466,7 @@ export function PhotoViewer({ photos, index, title, onClose }: { photos: string[
 export function PersonPage() {
   const { id = '' } = useParams();
   const c = findCandidate(id);
-  const toast = useToast();
-  const [report, setReport] = useState(false);
   if (!c) return <Navigate to="/seeker/people" replace />;
-  return (
-    <>
-      <ProfileView
-        c={c}
-        back={{ to: '/seeker/people', label: 'People' }}
-        actions={
-          <div className="row g8">
-            <Btn
-              kind="secondary"
-              h={44}
-              icon="share"
-              style={{ flex: 1 }}
-              onClick={() => {
-                navigator.clipboard?.writeText(location.href).catch(() => undefined);
-                toast('Link copied', 'link');
-              }}
-            >
-              Share
-            </Btn>
-            <Btn kind="secondary" h={44} icon="alert-circle" style={{ flex: 1 }} onClick={() => setReport(true)}>
-              Report
-            </Btn>
-          </div>
-        }
-      />
-      {report ? (
-        <Modal onClose={() => setReport(false)} label="Report profile" width={460}>
-          <h2 className="display d4">Report this profile?</h2>
-          <p className="muted lh">Our team reviews every report within 24 hours. The person won't know who reported them.</p>
-          <Btn
-            h={52}
-            full
-            onClick={() => {
-              setReport(false);
-              toast('Report sent');
-            }}
-          >
-            Send report
-          </Btn>
-        </Modal>
-      ) : null}
-    </>
-  );
+  // Seekers look at other profiles for reference only: no share or report here.
+  return <ProfileView c={c} back={{ to: '/seeker/people', label: 'People' }} />;
 }

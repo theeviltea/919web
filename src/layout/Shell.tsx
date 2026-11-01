@@ -2,6 +2,7 @@
 import { useCallback, useState } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Link, NavLink } from '../lib/links';
+import { ABOUT_URL } from '../lib/site';
 import { useTheme, type ThemePref } from '../lib/theme';
 import { useSession } from '../data/session';
 import { useSeeker } from '../data/seeker';
@@ -26,6 +27,9 @@ function TopNav({ items, right }: { items: Item[]; right: React.ReactNode }) {
               {it.badge ? <span className="badge">{it.badge}</span> : null}
             </NavLink>
           ))}
+          <a href={ABOUT_URL} className="navlink">
+            About 919
+          </a>
         </nav>
         <span className="grow" />
         <div className="row g10">{right}</div>
@@ -69,14 +73,22 @@ function ThemeSwitch() {
   );
 }
 
-type MenuLink = { to?: string; label: string; icon: IconName; onClick?: () => void; danger?: boolean };
+type MenuLink = { to?: string; href?: string; label: string; icon: IconName; onClick?: () => void; danger?: boolean };
 
 function AccountMenu({ trigger, head, links, signOut }: { trigger: React.ReactNode; head: React.ReactNode; links: MenuLink[]; signOut: MenuLink }) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const ref = useOutside<HTMLDivElement>(open, close);
   const item = (l: MenuLink) =>
-    l.to ? (
+    l.href ? (
+      <a key={l.label} href={l.href} className="mi" onClick={close}>
+        <span className="mi-ico">
+          <Icon name={l.icon} size={18} />
+        </span>
+        <span className="grow">{l.label}</span>
+        <Icon name="chevron-right" size={16} style={{ color: 'var(--text-light-secondary)' }} />
+      </a>
+    ) : l.to ? (
       <Link key={l.label} to={l.to} className="mi" onClick={close}>
         <span className="mi-ico">
           <Icon name={l.icon} size={18} />
@@ -146,6 +158,9 @@ export function GuestShell() {
         items={items}
         right={
           <>
+            <a href={ABOUT_URL} className="link s14 mob-only" style={{ padding: '0 6px' }}>
+              About 919
+            </a>
             <Btn kind="secondary" h={44} to="/auth/sign-in">
               Sign in
             </Btn>
@@ -212,6 +227,7 @@ export function SeekerShell() {
                 { to: '/profile/edit', label: 'Edit profile', icon: 'edit' },
                 { to: s.plan === 'free' ? '/profile/plans' : '/profile/subscription', label: 'Subscription', icon: 'star' },
                 { to: '/profile/settings', label: 'Settings', icon: 'settings' },
+                { href: ABOUT_URL, label: 'About 919', icon: 'globe' },
               ]}
               signOut={{ label: 'Log out', icon: 'logout', onClick: out, danger: true }}
               head={
@@ -283,6 +299,7 @@ export function EmployerShell() {
                 { to: '/company/team', label: 'Team and roles', icon: 'users' },
                 { to: '/company/subscription', label: 'Subscription', icon: 'star' },
                 { to: '/company/settings', label: 'Settings', icon: 'settings' },
+                { href: ABOUT_URL, label: 'About 919', icon: 'globe' },
               ]}
               signOut={{ label: 'Log out', icon: 'logout', onClick: out, danger: true }}
               head={

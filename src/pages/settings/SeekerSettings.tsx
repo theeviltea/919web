@@ -451,7 +451,7 @@ function JobModal({ job, onClose, onSave, onDelete }: { job?: Job; onClose: () =
   );
 }
 
-function Item({ ini, title, sub, meta, extra, onEdit }: { ini: string; title: string; sub: string; meta?: string; extra?: ReactNode; onEdit?: () => void }) {
+function Item({ ini, title, sub, meta, extra, onEdit, onRemove }: { ini: string; title: string; sub: string; meta?: string; extra?: ReactNode; onEdit?: () => void; onRemove?: () => void }) {
   return (
     <div className="row g14 sep" style={{ padding: '14px 0' }}>
       <Initials text={ini} size={44} />
@@ -468,6 +468,11 @@ function Item({ ini, title, sub, meta, extra, onEdit }: { ini: string; title: st
       {onEdit ? (
         <button aria-label={`Edit ${title}`} onClick={onEdit} className="iconbtn soft">
           <Icon name="edit" size={18} />
+        </button>
+      ) : null}
+      {onRemove ? (
+        <button aria-label={`Remove ${title}`} onClick={onRemove} className="iconbtn soft">
+          <Icon name="trash" size={18} />
         </button>
       ) : null}
     </div>
@@ -537,7 +542,7 @@ export function EditProfessional() {
       <Sec title="Portfolio and socials" gap={6}>
         <div>
           {p.links.map((l) => (
-            <Item key={l.id} ini={linkKinds[l.kind].code} title={linkKinds[l.kind].label} sub={l.value} onEdit={() => s.updateProfile({ links: p.links.filter((x) => x.id !== l.id) })} />
+            <Item key={l.id} ini={linkKinds[l.kind].code} title={linkKinds[l.kind].label} sub={l.value} onRemove={() => (s.updateProfile({ links: p.links.filter((x) => x.id !== l.id) }), toast('Link removed', 'trash'))} />
           ))}
         </div>
         <div className="row g8 wrap" style={{ marginTop: 8 }}>

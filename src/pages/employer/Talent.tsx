@@ -464,6 +464,7 @@ export function CandidatePage() {
   return (
     <>
       <ProfileView
+        contacts
         c={c}
         back={{ to: '/hire', label: 'Talent' }}
         actions={

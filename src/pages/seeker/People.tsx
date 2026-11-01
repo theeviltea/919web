@@ -229,7 +229,8 @@ export function People() {
 }
 
 // ---------- Profile view (People → person, Talent → candidate) ----------
-export function ProfileView({ c, actions, back }: { c: Candidate; actions?: ReactNode; back: { to: string; label: string } }) {
+/** `contacts`: portfolio and social links. Only employers see them; seekers browsing People never do (personal data). */
+export function ProfileView({ c, actions, back, contacts = false }: { c: Candidate; actions?: ReactNode; back: { to: string; label: string }; contacts?: boolean }) {
   const p = profileOf(c);
   const [viewer, setViewer] = useState<number | null>(null);
   const [player, setPlayer] = useState<number | null>(null);
@@ -360,7 +361,7 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions?: Reac
               </div>
             </Card>
           ) : null}
-          {p.links.length ? (
+          {contacts && p.links.length ? (
             <Card style={{ gap: 12 }}>
               <H2>Portfolio and socials</H2>
               {p.links.map((l) => (

@@ -128,11 +128,12 @@ export function useStickBottom(dep: unknown) {
 export const REPORT_REASONS = ['Asked me to pay a fee or deposit', 'Fake vacancy or company', 'Inappropriate messages', 'Unsafe working conditions', 'Pay or conditions differ from the vacancy', 'Something else'];
 
 /** The 919 chat pattern behind messages (same tile as the app), recoloured for light and dark. */
-export function useChatPattern() {
+/** The chat's 2D pattern as a background. `on` picks the ground colour token (chat: --back, cards: --surface). */
+export function useChatPattern(on: '--back' | '--surface' = '--back', scale = 1) {
   const read = () => {
     const cs = getComputedStyle(document.documentElement);
     const fg = cs.getPropertyValue('--chat-pattern').trim() || '#E1E6ED';
-    const bg = cs.getPropertyValue('--back').trim() || '#ECEFF4';
+    const bg = cs.getPropertyValue(on).trim() || (on === '--back' ? '#ECEFF4' : '#FFFFFF');
     return `url("data:image/svg+xml,${encodeURIComponent(chatTileXml(fg, bg))}")`;
   };
   const [bg, setBg] = useState(read);
@@ -146,6 +147,7 @@ export function useChatPattern() {
       mo.disconnect();
       mq.removeEventListener('change', update);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- read only depends on the token name
   }, []);
-  return { backgroundImage: bg, backgroundSize: `${CHAT_TILE.width}px ${CHAT_TILE.height}px` };
+  return { backgroundImage: bg, backgroundSize: `${CHAT_TILE.width * scale}px ${CHAT_TILE.height * scale}px` };
 }

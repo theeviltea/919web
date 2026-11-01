@@ -10,6 +10,7 @@ import pattern from '../../assets/img/pattern-3d.jpg';
 import { Link } from '../../lib/links';
 import { candidateCard, FrameRing } from '../../ui/domain';
 import { VideoGrid, VideoPlayer } from '../../ui/video';
+import { useChatPattern } from '../../ui/chat';
 import { Btn, Card, Crumbs, H2, Icon, Initials, Pill, TierBadge, type IconName } from '../../ui/kit';
 
 const byName = (n: string) => candidates.find((c) => c.name === n)!;
@@ -232,6 +233,7 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions?: Reac
   const p = profileOf(c);
   const [viewer, setViewer] = useState<number | null>(null);
   const [player, setPlayer] = useState<number | null>(null);
+  const deco = useChatPattern('--surface', 0.5);
   // Web: a gallery of distinct licensed photos of the same gender, starting with the profile photo.
   const media = mediaOf(c, c.gender === 'male' ? MALE : FEMALE);
   const gallery = media.photos;
@@ -269,9 +271,7 @@ export function ProfileView({ c, actions, back }: { c: Candidate; actions?: Reac
             {actions}
           </div>
         ) : (
-          <div className="prof-deco desk-only" aria-hidden="true">
-            <img src={pattern} alt="" />
-          </div>
+          <div className="prof-deco desk-only" aria-hidden="true" style={deco} />
         )}
       </section>
       <div className="layout-r mt16">

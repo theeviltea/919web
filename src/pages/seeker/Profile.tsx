@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useSeeker, jobPeriod, totalExperience, studyPeriod, linkKinds, completeness } from '../../data/seeker';
 import { fieldByKey, occupationRows } from '../../data/registration';
 import { city } from '../../data/asset';
+import pattern from '../../assets/img/pattern-3d.jpg';
 import { AvailCard, AvailModal } from './Feed';
 import { PhotoViewer } from './People';
 import { VideoGrid, VideoPlayer } from '../../ui/video';
@@ -45,8 +46,8 @@ export function SeekerProfilePage() {
   return (
     <main className="page">
       <section className="card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-        <div className="rel" style={{ height: 200, background: 'var(--primary)' }}>
-          {s.plan === 'max' && s.look.header ? <img src={city.dubai2} alt="" className="ph-cover" style={{ height: '100%' }} /> : null}
+        <div className={`prof-cover ${s.plan === 'max' ? 'lg' : 'sm'}`}>
+          {s.plan === 'max' && s.look.header ? <img src={city.dubai2} alt="" className="ph-cover" style={{ height: '100%' }} /> : <img src={pattern} alt="" aria-hidden="true" className="ph-cover prof-pattern" />}
         </div>
         <div className="row g20 wrap" style={{ position: 'relative', zIndex: 1, padding: '0 32px 28px', marginTop: -48, alignItems: 'flex-start' }}>
           <span style={{ borderRadius: '50%', padding: frame ? 5 : 0, background: frame ? FRAMES[frame] : undefined, flex: 'none' }}>

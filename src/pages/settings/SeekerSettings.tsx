@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from '../../lib/links';
 import { useTheme, type ThemePref } from '../../lib/theme';
 import { completeness, jobPeriod, linkKinds, MONTHS, studyPeriod, useSeeker, type Job, type LangLevel, type LinkKind } from '../../data/seeker';
-import { allCountries, citiesFor, fieldByKey, fields } from '../../data/registration';
+import { allCountries, appearanceTypes, citiesFor, clothingSizes, fieldByKey, fields, genres, hairColors, shoeSizes, type Field as RegField } from '../../data/registration';
+import type { FieldEntry } from '../../data/signup';
 import { useSession } from '../../data/session';
 import { city } from '../../data/asset';
 import type { FrameStyle } from '../../data/tiers';
 import { PhotoGrid } from '../onboarding/Seeker';
-import { Avatar, Btn, Card, Field, FRAMES, H2, Icon, Initials, Modal, ModalHead, Pill, Select, Toggle, TierBadge, useToast, type IconName } from '../../ui/kit';
+import { Avatar, Btn, Card, Field, FRAMES, H2, Icon, Initials, Modal, ModalHead, Option, Pill, Select, Toggle, TierBadge, useToast, type IconName } from '../../ui/kit';
 
 const NAV: [string, [string, IconName, string][]][] = [
   ['Profile', [['Edit profile', 'user', '/profile/edit'], ['Personal info', 'user', '/profile/personal'], ['General', 'image', '/profile/general'], ['Professional', 'briefcase', '/profile/professional']]],
@@ -479,6 +480,95 @@ function Item({ ini, title, sub, meta, extra, onEdit, onRemove }: { ini: string;
   );
 }
 
+// ---------- occupation editor (field, roles, questionnaire) ----------
+type Occ = FieldEntry;
+function OccModal({ occ, taken, canDelete, isPrimary, onClose, onSave, onDelete, onPrimary }: { occ?: Occ; taken: string[]; canDelete: boolean; isPrimary: boolean; onClose: () => void; onSave: (o: Occ) => void; onDelete?: () => void; onPrimary?: () => void }) {
+  const [field, setField] = useState<RegField | undefined>(occ?.field);
+  const [roles, setRoles] = useState<string[]>(occ?.roles ?? []);
+  const [d, setD] = useState<Record<string, string>>(occ?.details ?? {});
+  const [tattoos, setTattoos] = useState(!!occ?.tattoos);
+  const [piercing, setPiercing] = useState(!!occ?.piercing);
+  const [link, setLink] = useState(occ?.links[0] ?? '');
+  const f = field ? fieldByKey(field) : undefined;
+  const form = f?.form;
+  const body = form === 'model' || form === 'body';
+  const keys = body ? ['height', 'weight', ...(form === 'model' ? ['bust', 'waist', 'hips'] : []), 'clothing', 'shoe', 'hair', 'appearance'] : form === 'music' ? ['genre'] : [];
+  const ok = !!field && roles.length > 0 && keys.every((k) => d[k]) && (form !== 'service' || link);
+  const num = (k: string, label: string) => <Field key={k} label={label} value={d[k] ?? ''} onChange={(v) => setD({ ...d, [k]: v.replace(/\D/g, '').slice(0, 3) })} inputMode="numeric" />;
+  const sel = (k: string, label: string, options: string[]) => <Select key={k} label={label} value={d[k] ?? ''} options={options} onChange={(v) => setD({ ...d, [k]: v })} />;
+  return (
+    <Modal onClose={onClose} label="Occupation" width={640}>
+      <ModalHead title={occ ? f?.label ?? 'Occupation' : 'Add occupation'} sub={occ ? (isPrimary ? 'Your primary field' : 'Second field') : 'Pick a field, your roles and fill in the details.'} onClose={onClose} />
+      {!occ ? (
+        <div className="chips">
+          {fields
+            .filter((x) => !taken.includes(x.key))
+            .map((x) => (
+              <Option key={x.key} on={field === x.key} onClick={() => (setField(x.key), setRoles([]), setD({}))}>
+                {x.label}
+              </Option>
+            ))}
+        </div>
+      ) : null}
+      {f ? (
+        <div>
+          <div className="s15 strong" style={{ marginBottom: 10 }}>
+            Roles <span className="muted semi">· pick one or more</span>
+          </div>
+          <div className="chips">
+            {f.roles.map((r) => (
+              <Option key={r} on={roles.includes(r)} onClick={() => setRoles(roles.includes(r) ? roles.filter((x) => x !== r) : [...roles, r])}>
+                {r}
+              </Option>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {body ? (
+        <>
+          <div className="grid3 occ-grid" style={{ gap: 10 }}>
+            {num('height', 'Height, cm *')}
+            {num('weight', 'Weight, kg *')}
+            {form === 'model' ? [num('bust', 'Bust, cm *'), num('waist', 'Waist, cm *'), num('hips', 'Hips, cm *')] : null}
+            {sel('clothing', 'Clothing size *', clothingSizes)}
+            {sel('shoe', 'Shoe size, EU *', shoeSizes)}
+            {sel('hair', 'Hair color *', hairColors)}
+            {sel('appearance', 'Appearance type *', appearanceTypes)}
+          </div>
+          <div className="chips">
+            <Option on={tattoos} onClick={() => setTattoos(!tattoos)}>
+              Tattoos
+            </Option>
+            <Option on={piercing} onClick={() => setPiercing(!piercing)}>
+              Piercing
+            </Option>
+          </div>
+        </>
+      ) : null}
+      {form === 'music' ? sel('genre', 'Genre *', genres) : null}
+      {form === 'music' || form === 'service' ? <Field label={form === 'service' ? 'Portfolio link *' : 'Promo link · optional'} value={link} onChange={setLink} /> : null}
+      <div className="row between wrap g10 occ-foot">
+        <div className="row g14 wrap">
+          {occ && canDelete && onDelete ? (
+            <button className="row g8 s15 strong danger" onClick={onDelete}>
+              <Icon name="trash" size={18} />
+              Remove
+            </button>
+          ) : null}
+          {occ && !isPrimary && onPrimary ? (
+            <button className="link s15" onClick={onPrimary}>
+              Make primary
+            </button>
+          ) : null}
+        </div>
+        <Btn h={52} style={{ minWidth: 160 }} disabled={!ok} onClick={() => onSave({ field: field!, roles, details: d, tattoos, piercing, links: link ? [link] : [] })}>
+          Save
+        </Btn>
+      </div>
+    </Modal>
+  );
+}
+
 export function EditProfessional() {
   const s = useSeeker();
   const toast = useToast();
@@ -493,33 +583,24 @@ export function EditProfessional() {
     toast('Experience saved');
   };
   const free = fields.filter((f) => !p.occupations.some((o) => o.field === f.key));
+  const [occ, setOcc] = useState<number | 'new' | null>(null);
+  const setOccs = (o: Occ[], msg: string) => (s.updateProfile({ occupations: o }), setOcc(null), toast(msg));
   return (
     <SeekerLayout active="Professional">
       <Sec title="Occupations" gap={6}>
         <div>
           {p.occupations.map((o, i) => (
-            <Item key={o.field} ini={fieldByKey(o.field).label.slice(0, 2).toUpperCase()} title={fieldByKey(o.field).label} sub={o.roles.join(' · ')} extra={i === 0 ? <Pill tone="blue">Primary</Pill> : undefined} />
+            <Item key={o.field} ini={fieldByKey(o.field).label.slice(0, 2).toUpperCase()} title={fieldByKey(o.field).label} sub={o.roles.join(' · ')} extra={i === 0 ? <Pill tone="blue">Primary</Pill> : undefined} onEdit={() => setOcc(i)} />
           ))}
         </div>
         {free.length && p.occupations.length < 2 ? (
-          <select
-            aria-label="Add occupation"
-            value=""
-            className="link"
-            style={{ border: 'none', background: 'transparent', height: 40, fontSize: 15, alignSelf: 'flex-start' }}
-            onChange={(e) => {
-              const f = fieldByKey(e.target.value as never);
-              s.updateProfile({ occupations: [...p.occupations, { field: f.key, roles: [f.roles[0]], details: {}, links: [] }] });
-            }}
-          >
-            <option value="">+ Add occupation</option>
-            {free.map((f) => (
-              <option key={f.key} value={f.key}>
-                {f.label}
-              </option>
-            ))}
-          </select>
-        ) : null}
+          <button className="link row g8" style={{ height: 40 }} onClick={() => setOcc('new')}>
+            <Icon name="add" size={18} />
+            Add occupation
+          </button>
+        ) : (
+          <div className="small muted">You can have up to 2 occupations. The primary one shows first to employers.</div>
+        )}
       </Sec>
       <Sec title="Experience" gap={6}>
         <div>
@@ -559,6 +640,18 @@ export function EditProfessional() {
           </Btn>
         </div>
       </Sec>
+      {occ !== null ? (
+        <OccModal
+          occ={occ === 'new' ? undefined : p.occupations[occ]}
+          taken={p.occupations.map((o) => o.field)}
+          canDelete={p.occupations.length > 1}
+          isPrimary={occ === 0}
+          onClose={() => setOcc(null)}
+          onSave={(o) => setOccs(occ === 'new' ? [...p.occupations, o] : p.occupations.map((x, k) => (k === occ ? o : x)), occ === 'new' ? 'Occupation added' : 'Occupation saved')}
+          onDelete={occ === 'new' ? undefined : () => setOccs(p.occupations.filter((_, k) => k !== occ), 'Occupation removed')}
+          onPrimary={occ === 'new' ? undefined : () => setOccs([p.occupations[occ], ...p.occupations.filter((_, k) => k !== occ)], 'Primary occupation changed')}
+        />
+      ) : null}
       {job ? <JobModal job={job === 'new' ? undefined : job} onClose={() => setJob(null)} onSave={saveJob} onDelete={job === 'new' ? undefined : () => (s.updateProfile({ experience: p.experience.filter((x) => x.id !== job.id) }), setJob(null))} /> : null}
     </SeekerLayout>
   );

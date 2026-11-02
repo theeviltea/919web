@@ -328,6 +328,14 @@ const generated: Vacancy[] = seeds.map(([title, company, sphere, contract, amoun
   });
 });
 
+// Gallery demo: the hand-made vacancies show every photo count from 1 to 10 (licensed stock and city shots only).
+const GALLERY_POOL = [asset('dubai2'), asset('stock/f-photographer.webp'), asset('dubai1'), asset('stock/f-dj.webp'), asset('stock/f-yellow-lips.webp'), asset('stock/f-guitar-electric.webp'), asset('stock/f-makeup.webp'), asset('stock/f-headphones.webp'), asset('stock/f-pink-skirt.webp'), asset('stock/f-guitar-acoustic.webp')];
+const GALLERY_COUNT: Record<string, number> = { v1: 10, v2: 1, v3: 2, v4: 3, v5: 4, v6: 5, v7: 6, v8: 7, v9: 9 };
+vacancies.forEach((v) => {
+  const n = GALLERY_COUNT[v.id];
+  if (n) v.photos = [v.cover, ...GALLERY_POOL.filter((x) => x !== v.cover)].slice(0, n);
+});
+
 export const allVacancies: Vacancy[] = [...vacancies, ...generated];
 /** Public feed: 9 hand-made + 43 generated = 52 vacancies. */
 export const feedVacancies = [...vacancies.slice(0, 9), ...generated];

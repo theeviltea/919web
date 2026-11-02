@@ -10,6 +10,7 @@ import { useSession } from '../../data/session';
 import type { Vacancy } from '../../data/types';
 import { Link } from '../../lib/links';
 import { AppliedPill, money, UrgentPill } from '../../ui/domain';
+import { PhotoViewer } from './People';
 import { Btn, Card, Crumbs, H2, Icon, Initials, Modal, ModalHead, Pill, useToast } from '../../ui/kit';
 
 const QUICK = ['I can start this week', 'I have similar experience', 'Available on weekends'];
@@ -136,6 +137,44 @@ function LimitModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/**
+ * Vacancy photos, up to 10. Desktop: 1 wide · 2 halves · 3 big + 2 stacked · 4 big + 3 stacked · 5+ big + 2×2 with "+N".
+ * Phones: a swipeable strip with a counter. Every photo opens the full-screen viewer.
+ */
+export function VacancyGallery({ photos, title }: { photos: string[]; title: string }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const [cur, setCur] = useState(0);
+  const n = photos.length;
+  const shown = n >= 5 ? 5 : n;
+  const tile = (i: number) => (
+    <button key={i} className={`vg-tile t${i}`} onClick={() => setOpen(i)} aria-label={i === 4 && n > 5 ? `Show all ${n} photos` : `Photo ${i + 1} of ${n}`}>
+      <img src={photos[i]} alt="" />
+      {i === 4 && n > 5 ? <span className="more">+{n - 5}</span> : null}
+    </button>
+  );
+  return (
+    <>
+      <div className={`vgal n${shown} desk-only`}>{Array.from({ length: shown }, (_, i) => tile(i))}</div>
+      <div className="vgal-m mob-only">
+        <div className="vgal-strip" onScroll={(e) => setCur(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>
+          {photos.map((p, i) => (
+            <button key={i} onClick={() => setOpen(i)} aria-label={`Photo ${i + 1} of ${n}`}>
+              <img src={p} alt="" />
+            </button>
+          ))}
+        </div>
+        {n > 1 ? (
+          <span className="vgal-count">
+            <Icon name="image" size={14} />
+            {cur + 1} / {n}
+          </span>
+        ) : null}
+      </div>
+      {open !== null ? <PhotoViewer photos={photos} index={open} title={title} ratio="4 / 3" onClose={() => setOpen(null)} /> : null}
+    </>
+  );
+}
+
 export function VacancyBody({ v, side, fit }: { v: Vacancy; side: React.ReactNode; fit?: React.ReactNode }) {
   const [more, setMore] = useState(false);
   const photos = v.photos.length ? v.photos : [v.cover];
@@ -149,19 +188,7 @@ export function VacancyBody({ v, side, fit }: { v: Vacancy; side: React.ReactNod
   return (
     <div className="layout-r w380 mt16">
       <div className="stack">
-        <div className="ovh" style={{ display: 'grid', gridTemplateColumns: photos.length > 1 ? '2fr 1fr' : '1fr', gridTemplateRows: '160px 160px', gap: 8, borderRadius: 24 }}>
-          <img src={photos[0]} alt="" className="ph-cover" style={{ gridRow: '1 / 3', height: '100%' }} />
-          {photos.slice(1, 3).map((p, i) => (
-            <div key={i} className="rel">
-              <img src={p} alt="" className="ph-cover" style={{ height: '100%' }} />
-              {i === 1 && photos.length > 3 ? (
-                <span className="play" style={{ background: 'rgba(14,26,43,.45)', color: '#fff', fontWeight: 700 }}>
-                  +{photos.length - 3} photos
-                </span>
-              ) : null}
-            </div>
-          ))}
-        </div>
+        <VacancyGallery photos={photos} title={v.title} />
         <Card style={{ gap: 14 }}>
           <div className="row wrap g6">
             {v.urgent ? <UrgentPill /> : null}

@@ -426,11 +426,18 @@ function MediaGrid({ n, kind, stage, children }: { n: number; kind: 'photo' | 'v
   );
 }
 
-export function PhotoViewer({ photos, index, title, onClose }: { photos: string[]; index: number; title: string; onClose: () => void }) {
+export function PhotoViewer({ photos, index, title, onClose, ratio = '3 / 4' }: { photos: string[]; index: number; title: string; onClose: () => void; ratio?: string }) {
   const [i, setI] = useState(index);
   const go = (d: number) => setI((i + d + photos.length) % photos.length);
+  const touch = useRef(0);
   return (
     <div
+      className="pviewer"
+      onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
+      onTouchEnd={(e) => {
+        const dx = e.changedTouches[0].clientX - touch.current;
+        if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+      }}
       role="dialog"
       aria-modal="true"
       aria-label="Photos"
@@ -447,9 +454,9 @@ export function PhotoViewer({ photos, index, title, onClose }: { photos: string[
           <Icon name="cancel" size={22} />
         </button>
       </div>
-      <img src={photos[i]} alt="" style={{ position: 'absolute', left: '50%', top: 90, transform: 'translateX(-50%)', height: 'calc(100vh - 220px)', maxWidth: 'calc(100vw - 32px)', aspectRatio: '3 / 4', borderRadius: 20, objectFit: 'cover' }} />
+      <img className="pv-img" src={photos[i]} alt="" style={{ position: 'absolute', left: '50%', top: 90, transform: 'translateX(-50%)', height: 'calc(100vh - 220px)', maxWidth: 'calc(100vw - 32px)', maxHeight: ratio === '3 / 4' ? undefined : 'calc((100vw - 32px) * 3 / 4)', aspectRatio: ratio, borderRadius: 20, objectFit: 'cover' }} />
       {(['left', 'right'] as const).map((d) => (
-        <button key={d} aria-label={d === 'left' ? 'Previous' : 'Next'} onClick={() => go(d === 'left' ? -1 : 1)} style={{ position: 'absolute', [d]: 32, top: '50%', transform: 'translateY(-50%)', width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,.14)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button key={d} className="pv-nav" aria-label={d === 'left' ? 'Previous' : 'Next'} onClick={() => go(d === 'left' ? -1 : 1)} style={{ position: 'absolute', [d]: 32, top: '50%', transform: 'translateY(-50%)', width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,.14)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon name={`chevron-${d}`} size={28} />
         </button>
       ))}

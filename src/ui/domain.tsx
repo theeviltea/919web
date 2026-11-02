@@ -150,7 +150,6 @@ export function Hero({
   onSubmit,
   onFilters,
   filters = 0,
-  city = 'Dubai',
 }: {
   eyebrow: ReactNode;
   title: string;
@@ -160,7 +159,6 @@ export function Hero({
   onSubmit: () => void;
   onFilters: () => void;
   filters?: number;
-  city?: string;
 }) {
   return (
     <section className="hero" style={{ marginTop: 0 }}>
@@ -184,19 +182,14 @@ export function Hero({
           <Icon name="search" />
           <input value={query} onChange={(e) => onQuery(e.target.value)} placeholder={placeholder} aria-label={placeholder} />
         </label>
-        <span className="city desk-only">
-          <Icon name="location" size={18} />
-          {city}
-          <Icon name="chevron-down" size={16} />
-        </span>
+        <button type="submit" className="go-in" aria-label="Search">
+          <Icon name="arrow-right" size={20} />
+        </button>
       </form>
       <button className="filterbtn" onClick={onFilters}>
         <Icon name="filter" />
         Filters
         {filters ? <span className="n">{filters}</span> : null}
-      </button>
-      <button className="btn ink h56 go" style={{ height: 56, borderRadius: 16, padding: '0 26px' }} onClick={onSubmit}>
-        Search
       </button>
     </section>
   );

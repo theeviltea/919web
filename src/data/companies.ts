@@ -98,3 +98,11 @@ export function companyProfile(id: string): CompanyProfile | undefined {
 
 /** Active vacancies of a company. */
 export const companyVacancies = (id: string) => byId[id]?.list ?? [];
+
+/** Companies with the most open vacancies right now, verified first among equals. */
+export function topCompanies(n = 5) {
+  return Object.entries(byId)
+    .map(([id, { first, list }]) => ({ id, name: first.company.name, initials: first.company.initials, verified: first.company.verified, industry: spheres[first.sphere], city: first.city, count: list.length }))
+    .sort((a, b) => b.count - a.count || Number(b.verified) - Number(a.verified))
+    .slice(0, n);
+}

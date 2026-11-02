@@ -11,8 +11,9 @@ import type { Sphere } from '../../data/types';
 import { useSession } from '../../data/session';
 import { Link } from '../../lib/links';
 import { Hero, SphereChips, TalentCard, VacancyRow } from '../../ui/domain';
+import { topCompanies } from '../../data/companies';
 import { FiltersDrawer } from '../../ui/filters';
-import { Avatar, Btn, Card, Empty, FlashTile, H2, Icon, Modal, ModalHead, Option, TierBadge, Toggle, useToast } from '../../ui/kit';
+import { Avatar, Btn, Card, Empty, FlashTile, H2, Icon, Modal, ModalHead, Option, TierBadge, Toggle, useToast, Initials } from '../../ui/kit';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -354,7 +355,8 @@ export function SeekerSearch() {
   };
   return (
     <main className="page">
-      <div style={{ maxWidth: 880, margin: '0 auto' }}>
+      <div className="layout-r w340">
+      <div className="stack" style={{ gap: 0, minWidth: 0 }}>
       <div className="row g12">
         <form
           className="search grow"
@@ -417,7 +419,84 @@ export function SeekerSearch() {
         </div>
       </div>
       </div>
+      <aside className="stack wide-only" style={{ position: 'sticky', top: 96 }}>
+        {user ? <ProfileStatus /> : null}
+        <TopCompanies />
+      </aside>
+      </div>
       {drawer ? <FiltersDrawer value={filters} source={feedVacancies} onClose={() => setDrawer(false)} onApply={(f) => (setFilters(f), setDrawer(false))} /> : null}
     </main>
+  );
+}
+
+/** Search page side: how complete the seeker's profile is. */
+function ProfileStatus() {
+  const s = useSeeker();
+  const c = completeness(s.profile);
+  const done = c.percent >= 100;
+  return (
+    <Card pad={20} style={{ gap: 12 }}>
+      <div className="row g12">
+        <Avatar src={s.profile.photo} size={48} />
+        <div className="grow" style={{ minWidth: 0 }}>
+          <div className="s15 strong ellipsis">Your profile</div>
+          <div className="small muted">{done ? 'Complete · employers see everything' : `${c.percent}% complete`}</div>
+        </div>
+        <span className="s16 strong" style={{ color: done ? 'var(--success-text)' : 'var(--link)' }}>
+          {c.percent}%
+        </span>
+      </div>
+      <div style={{ height: 8, borderRadius: 999, background: 'var(--back-darker)' }}>
+        <div style={{ width: `${c.percent}%`, height: 8, borderRadius: 999, background: done ? '#1DB954' : 'var(--primary)' }} />
+      </div>
+      {c.next ? (
+        <Link to="/profile/edit" className="row g10 inset" style={{ padding: '10px 12px', borderRadius: 14, color: 'var(--text-headline)' }}>
+          <Icon name="add" size={16} />
+          <span className="grow s14 semi">{c.next.hint}</span>
+          <span className="small strong" style={{ color: 'var(--success-text)' }}>
+            → {c.nextPercent}%
+          </span>
+        </Link>
+      ) : (
+        <Link to="/seeker/profile" className="link s14">
+          View my profile
+        </Link>
+      )}
+    </Card>
+  );
+}
+
+/** Search page side: the companies hiring the most on 919 right now. */
+function TopCompanies() {
+  const list = topCompanies(5);
+  return (
+    <Card pad={20} style={{ gap: 4 }}>
+      <H2>Top companies</H2>
+      <div className="small muted" style={{ marginBottom: 6 }}>
+        Most open vacancies this week
+      </div>
+      {list.map((c, i) => (
+        <Link key={c.id} to={`/org/${c.id}`} className="row g12 sep" style={{ padding: '10px 0', color: 'var(--text-headline)' }}>
+          <span className="small strong muted" style={{ width: 14 }}>
+            {i + 1}
+          </span>
+          <Initials text={c.initials} size={40} radius={12} />
+          <div className="grow" style={{ minWidth: 0 }}>
+            <div className="row g4 s14 strong">
+              <span className="ellipsis">{c.name}</span>
+              {c.verified ? (
+                <span style={{ color: 'var(--link)', display: 'flex', flex: 'none' }}>
+                  <Icon name="verified" size={15} />
+                </span>
+              ) : null}
+            </div>
+            <div className="small muted ellipsis">
+              {c.industry} · {c.city}
+            </div>
+          </div>
+          <span className="pill gray">{c.count} open</span>
+        </Link>
+      ))}
+    </Card>
   );
 }

@@ -985,6 +985,7 @@ export function SeekerSettings() {
     ['apps', 'Application updates'],
     ['messages', 'New messages'],
     ['vacancies', 'New vacancies in my fields'],
+    ['allVacancies', 'All vacancies'],
     ['urgent', 'Urgent vacancies'],
     ['email', 'Email digest'],
   ];
@@ -1022,7 +1023,7 @@ export function SeekerSettings() {
           {prefs.map(([k, l]) => (
             <div key={k} className="row between">
               <span className="semi">{l}</span>
-              <Toggle on={s.prefs[k] ?? true} label={l} onChange={(v) => s.setPref(k, v)} />
+              <Toggle on={s.prefs[k] ?? k !== 'allVacancies'} label={l} onChange={(v) => s.setPref(k, v)} />
             </div>
           ))}
         </Modal>

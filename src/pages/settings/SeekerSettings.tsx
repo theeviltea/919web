@@ -13,7 +13,7 @@ import { PhotoGrid } from '../onboarding/Seeker';
 import { Avatar, Btn, Card, Field, FRAMES, H2, Icon, Initials, Modal, ModalHead, Option, Pill, Select, Toggle, TierBadge, useToast, type IconName } from '../../ui/kit';
 
 const NAV: [string, [string, IconName, string][]][] = [
-  ['Profile', [['Edit profile', 'user', '/profile/edit'], ['Personal info', 'user', '/profile/personal'], ['General', 'image', '/profile/general'], ['Professional', 'briefcase', '/profile/professional']]],
+  ['Profile', [['Edit profile', 'edit', '/profile/edit'], ['Personal info', 'user', '/profile/personal'], ['General', 'image', '/profile/general'], ['Professional', 'briefcase', '/profile/professional']]],
   ['Plan', [['Subscription', 'star', '/profile/subscription'], ['Profile look', 'sparkles', '/profile/look']]],
   ['Account', [['Settings', 'settings', '/profile/settings']]],
 ];

@@ -5,6 +5,8 @@ import { company, EMPLOYER_LOSSES, initialsOf, useEmployer, type Member } from '
 import { allCountries, citiesFor, positions } from '../../data/registration';
 import { useSession } from '../../data/session';
 import { personFor } from '../../data/asset';
+import { Link } from '../../lib/links';
+import { PhoneChange } from '../../ui/phoneChange';
 import { Sec, SettingsLayout, SaveBar, SRow, ThemeSeg } from './SeekerSettings';
 import { Avatar, Btn, Card, Field, Icon, Initials, Modal, ModalHead, Pill, Select, Toggle, useToast, type IconName } from '../../ui/kit';
 
@@ -102,6 +104,15 @@ export function CompanyDetails() {
           <Field label="Last name *" value={rep.lastName} onChange={(v) => setRep({ ...rep, lastName: v })} />
           <Select label="Position *" value={rep.position} options={[...new Set([rep.position, ...positions])]} onChange={(v) => setRep({ ...rep, position: v })} />
           <Field label="Work email *" value={rep.email} onChange={(v) => setRep({ ...rep, email: v })} />
+          <div className="field" style={{ alignItems: 'center' }}>
+            <span className="grow col">
+              <span className="lab">Phone · sign-in</span>
+              <span className="s15">{e.rep.phone || 'Not added'}</span>
+            </span>
+            <Link to="/company/phone" className="link s14">
+              {e.rep.phone ? 'Change' : 'Add'}
+            </Link>
+          </div>
         </div>
       </Sec>
       <SaveBar
@@ -111,6 +122,22 @@ export function CompanyDetails() {
           e.setRep(rep);
           toast(renamed ? 'Saved. The new name goes to a quick check' : 'Changes saved');
         }}
+      />
+    </EmpLayout>
+  );
+}
+
+export function CompanyPhone() {
+  const e = useEmployer();
+  const toast = useToast();
+  const nav = useNavigate();
+  return (
+    <EmpLayout active="Company details">
+      <PhoneChange
+        current={e.rep.phone || undefined}
+        note="The old number will stop working for sign-in. Candidates see it only if you allow it."
+        onCancel={() => nav('/company/details')}
+        onSaved={(phone) => (e.setRep({ phone }), toast('Phone number updated', 'check'), nav('/company/details'))}
       />
     </EmpLayout>
   );
@@ -451,8 +478,8 @@ export function CompanySettings() {
       </Sec>
       <Sec title="Legal" gap={4}>
         <div>
-          <SRow icon="file" title="User agreement" to="/company/settings#terms" />
-          <SRow icon="lock" title="Privacy policy" to="/company/settings#privacy" />
+          <SRow icon="file" title="User agreement" to="/legal/business-terms" />
+          <SRow icon="lock" title="Privacy policy" to="/legal/business-privacy" />
         </div>
       </Sec>
       <Card style={{ padding: '12px 28px 20px', gap: 8 }}>

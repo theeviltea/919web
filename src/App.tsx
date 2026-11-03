@@ -10,7 +10,8 @@ import { ToastProvider } from './ui/kit';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { AppPromoSheet } from './ui/appPromo';
 import { EmployerShell, GuestShell, SeekerShell } from './layout/Shell';
-import { About, Code, EmailSignIn, Forgot, NewPassword, Register, RolePick, SignIn } from './pages/auth/Auth';
+import { About, Code, EmailSignIn, Forgot, NewPassword, Register, RegisterEmail, RolePick, SignIn } from './pages/auth/Auth';
+import { LegalPage } from './pages/Legal';
 import { Details, Media, Occupation, Review } from './pages/onboarding/Seeker';
 import { EmpCompany, EmpJoin, EmpJoinSent, EmpLicence, EmpRep, EmpReview, EmpType } from './pages/onboarding/Employer';
 import { GuestFeed, GuestTalent } from './pages/seeker/Feed';
@@ -22,13 +23,13 @@ import { SeekerMessages } from './pages/seeker/Messages';
 import { SeekerProfilePage } from './pages/seeker/Profile';
 import { SeekerNotifications } from './pages/seeker/Notifications';
 import { CompanyPage } from './pages/seeker/Company';
-import { EditHub, EditGeneral, EditPersonal, EditProfessional, ProfileLook, Plans, SeekerSettings, SeekerSubscription } from './pages/settings/SeekerSettings';
+import { EditHub, EditGeneral, EditPersonal, EditProfessional, ProfileLook, Plans, SeekerPhone, SeekerSettings, SeekerSubscription } from './pages/settings/SeekerSettings';
 import { FindTalent, CandidatePage } from './pages/employer/Talent';
 import { MyVacancies, MyVacancyPage, ApplicantsPage } from './pages/employer/Vacancies';
 import { EmployerMessages } from './pages/employer/Messages';
 import { CompanyHome, EmployerNotifications } from './pages/employer/Company';
 import { PostVacancy } from './pages/employer/Post';
-import { CompanyDetails, CompanySettings, CompanySubscription, Team, Verification } from './pages/settings/EmployerSettings';
+import { CompanyDetails, CompanyPhone, CompanySettings, CompanySubscription, Team, Verification } from './pages/settings/EmployerSettings';
 
 // The single-file preview runs inside the artifact viewer, which doesn't allow URL changes, so routing stays in memory.
 const PREVIEW = import.meta.env.MODE === 'preview';
@@ -68,6 +69,7 @@ export default function App() {
                     <Route index element={<GuestFeed />} />
                     <Route path="talent-preview" element={<GuestTalent />} />
                     <Route path="v/:id" element={<VacancyPage guest />} />
+                    <Route path="search" element={<SeekerSearch />} />
                   </Route>
                   <Route path="auth/sign-in" element={<SignIn />} />
                   <Route path="auth/email" element={<EmailSignIn />} />
@@ -76,6 +78,8 @@ export default function App() {
                   <Route path="auth/new-password" element={<NewPassword />} />
                   <Route path="auth/role" element={<RolePick />} />
                   <Route path="auth/register" element={<Register />} />
+                  <Route path="auth/register-email" element={<RegisterEmail />} />
+                  <Route path="legal/:doc" element={<LegalPage />} />
                   <Route path="auth/about" element={<About />} />
                   <Route path="signup/occupation" element={<Occupation />} />
                   <Route path="signup/details" element={<Details />} />
@@ -103,6 +107,7 @@ export default function App() {
                     <Route path="org/:id" element={<CompanyPage />} />
                     <Route path="profile/edit" element={<EditHub />} />
                     <Route path="profile/personal" element={<EditPersonal />} />
+                    <Route path="profile/phone" element={<SeekerPhone />} />
                     <Route path="profile/general" element={<EditGeneral />} />
                     <Route path="profile/professional" element={<EditProfessional />} />
                     <Route path="profile/look" element={<ProfileLook />} />
@@ -122,6 +127,7 @@ export default function App() {
                     <Route path="hire/company" element={<CompanyHome />} />
                     <Route path="hire/notifications" element={<EmployerNotifications />} />
                     <Route path="company/details" element={<CompanyDetails />} />
+                    <Route path="company/phone" element={<CompanyPhone />} />
                     <Route path="company/team" element={<Team />} />
                     <Route path="company/verification" element={<Verification />} />
                     <Route path="company/subscription" element={<CompanySubscription />} />

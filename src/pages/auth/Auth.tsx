@@ -112,10 +112,11 @@ export function SocialButtons({ onPick, emailTo, labels = 'continue' }: { onPick
   );
 }
 
-function PhoneField({ digits, onChange, autoFocus }: { digits: string; onChange: (d: string) => void; autoFocus?: boolean }) {
+export function PhoneField({ digits, onChange, autoFocus, label = "Phone number", error }: { digits: string; onChange: (d: string) => void; autoFocus?: boolean; label?: string; error?: string }) {
   return (
     <Field
-      label="Phone number"
+      label={label}
+      error={error}
       value={formatPhone(digits, '+971')}
       onChange={(v) => onChange(v.replace(/\D/g, '').slice(0, 9))}
       placeholder="50 123 4567"
@@ -213,6 +214,42 @@ export function EmailSignIn() {
 
 // ---------- OTP ----------
 const WRONG = '000000';
+/** Sign up with email: confirm it with a 6-digit code. Prototype: taken@919.ae is an existing account. */
+export function RegisterEmail() {
+  const nav = useNavigate();
+  const { pendingRole } = useSession();
+  const [email, setEmail] = useState('');
+  if (!pendingRole) return <Navigate to="/auth/role" replace />;
+  const valid = /\S+@\S+\.\S+/.test(email);
+  const taken = email.trim().toLowerCase() === 'taken@919.ae';
+  return (
+    <AuthLayout top={<SignInTop />}>
+      <IconBtn icon="chevron-left" label="Back" to="/auth/register" />
+      <PageTitle title="Sign up with email" sub="We’ll send a code to confirm it’s your email." />
+      <form
+        className="col g14"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (valid && !taken) nav(`/auth/code?flow=signup&to=${encodeURIComponent(email.trim())}`);
+        }}
+      >
+        <Field label="Email" value={email} onChange={setEmail} type="email" autoFocus error={taken ? 'This email already has a 919 account. Sign in instead.' : undefined} />
+        {taken ? (
+          <Link to="/auth/email" className="link s14">
+            Sign in with this email
+          </Link>
+        ) : null}
+        <Btn type="submit" h={56} full disabled={!valid || taken}>
+          Get the code
+        </Btn>
+      </form>
+      <p className="small muted lh">
+        By continuing you accept the <Link to={pendingRole === 'employer' ? '/legal/business-terms' : '/legal/terms'}>User agreement</Link> and <Link to={pendingRole === 'employer' ? '/legal/business-privacy' : '/legal/privacy'}>Privacy policy</Link>.
+      </p>
+    </AuthLayout>
+  );
+}
+
 export function Code() {
   const [sp] = useSearchParams();
   const nav = useNavigate();
@@ -222,7 +259,7 @@ export function Code() {
   const flow = sp.get('flow') ?? 'signin';
   const to = sp.get('to') ?? '';
   const [dial, digits = ''] = to.split('|');
-  const target = flow === 'forgot' ? to : `${dial} ${digits.slice(0, 2)} ••• ${digits.slice(-4)}`;
+  const target = flow === 'forgot' || to.includes('@') ? to : `${dial} ${digits.slice(0, 2)} ••• ${digits.slice(-4)}`;
   const [code, setCode] = useState('');
   const [left, setLeft] = useState(60);
   const [attempts, setAttempts] = useState(3);
@@ -254,7 +291,7 @@ export function Code() {
   };
   return (
     <AuthLayout top={<CreateTop />}>
-      <IconBtn icon="chevron-left" label="Back" to={flow === 'forgot' ? '/auth/forgot' : flow === 'signin' ? '/auth/sign-in' : '/auth/register'} />
+      <IconBtn icon="chevron-left" label="Back" to={flow === 'forgot' ? '/auth/forgot' : flow === 'signin' ? '/auth/sign-in' : to.includes('@') ? '/auth/register-email' : '/auth/register'} />
       <PageTitle
         title="Enter the code"
         sub={
@@ -459,8 +496,11 @@ export function Register() {
       </form>
       <Divider>or</Divider>
       <SocialButtons onPick={(k) => go(k)} />
+      <Btn kind="secondary" h={52} full icon="mail" to="/auth/register-email">
+        Continue with email
+      </Btn>
       <p className="small muted lh">
-        By continuing you accept the <a href="#terms">User agreement</a> and <a href="#privacy">Privacy policy</a>.
+        By continuing you accept the <Link to={pendingRole === 'employer' ? '/legal/business-terms' : '/legal/terms'}>User agreement</Link> and <Link to={pendingRole === 'employer' ? '/legal/business-privacy' : '/legal/privacy'}>Privacy policy</Link>.
       </p>
     </AuthLayout>
   );

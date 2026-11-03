@@ -86,7 +86,31 @@ export function EmployerMessages() {
   const cur = t ? (ctx && contexts.includes(ctx) ? ctx : contexts[0] ?? 'direct') : 'direct';
   const msgs: EmpMsg[] = t ? (t.chats?.[cur] ?? fallbackChat(t.name, t.last, t.mine, t.time, cur === 'direct')) : [];
   const ref = useStickBottom(`${id}-${cur}-${msgs.length}`);
-  const list = e.threads.filter((x) => x.box === box && x.state !== 'deleted' && (!q.trim() || x.name.toLowerCase().includes(q.trim().toLowerCase())));
+  const query = q.trim().toLowerCase();
+  // Search (app: EmpMessagesSearch): chats by name or vacancy across all boxes, plus messages that contain the text.
+  const vacTitles = (x: (typeof e.threads)[number]) => (x.vacancies ?? []).map((v) => e.vacancies.find((y) => y.id === v)?.title ?? '').join(' ');
+  const list = e.threads.filter((x) => x.state !== 'deleted' && (query ? `${x.name} ${x.subtitle ?? ''} ${vacTitles(x)}`.toLowerCase().includes(query) : x.box === box));
+  const msgHits = query
+    ? e.threads.flatMap((x) =>
+        x.state === 'deleted'
+          ? []
+          : Object.entries(x.chats ?? {}).flatMap(([c, ms]) =>
+              ms.filter((m) => m.kind === 'text' && m.text.toLowerCase().includes(query)).map((m) => ({ x, c, m: m as Extract<EmpMsg, { kind: 'text' }> })),
+            ),
+      )
+    : [];
+  const snippet = (s: string) => {
+    const i = s.toLowerCase().indexOf(query);
+    const a = Math.max(0, i - 24);
+    return (
+      <>
+        {a ? '…' : ''}
+        {s.slice(a, i)}
+        <mark>{s.slice(i, i + query.length)}</mark>
+        {s.slice(i + query.length)}
+      </>
+    );
+  };
   const ctxLabel = (c: string) => (c === 'direct' ? 'Direct' : (e.vacancies.find((v) => v.id === c)?.title ?? c));
   const cand = t?.candidateId ? findCandidate(t.candidateId) : undefined;
   const closed = t && (t.state === 'blocked' || t.state === 'deleted' || t.request === 'pending' || t.box === 'inactive');
@@ -96,7 +120,8 @@ export function EmployerMessages() {
         <section className="threads" aria-label="Chats">
           <div className="col g12" style={{ padding: '20px 20px 12px' }}>
             <h1 className="display d3">Messages</h1>
-            <SearchBox value={q} onChange={setQ} placeholder="Search by name" inset />
+            <SearchBox value={q} onChange={setQ} placeholder="Search chats, messages, vacancies" inset />
+            {query ? null : (
             <Tabs<Box>
               full
               items={[
@@ -107,8 +132,10 @@ export function EmployerMessages() {
               value={box}
               onChange={setBox}
             />
+            )}
           </div>
           <div className="list">
+            {query && list.length ? <div className="small strong muted" style={{ padding: '8px 20px' }}>Chats · {list.length}</div> : null}
             {list.map((x) => (
               <ThreadRow
                 key={x.id}
@@ -123,7 +150,30 @@ export function EmployerMessages() {
                 muted={x.box !== 'active'}
               />
             ))}
-            {!list.length ? <p className="muted s14" style={{ padding: 20 }}>No chats here.</p> : null}
+            {msgHits.length ? <div className="small strong muted" style={{ padding: '14px 20px 8px' }}>Messages · {msgHits.length}</div> : null}
+            {msgHits.map(({ x, c, m }) => (
+              <ThreadRow
+                key={`${x.id}-${c}-${m.id}`}
+                to={`/hire/messages/${x.id}`}
+                on={false}
+                avatar={<Avatar src={x.photo} size={48} />}
+                title={x.name}
+                sub={c === 'direct' ? 'Direct' : (e.vacancies.find((v) => v.id === c)?.title ?? '')}
+                last={snippet(`${m.mine ? 'You: ' : ''}${m.text}`)}
+                time={m.time}
+                unread={0}
+              />
+            ))}
+            {!list.length && !msgHits.length ? (
+              query ? (
+                <div className="col g6" style={{ padding: 20 }}>
+                  <span className="s15 strong">Nothing found for “{q.trim()}”</span>
+                  <span className="s14 muted">Search looks in names, vacancy titles and message text.</span>
+                </div>
+              ) : (
+                <p className="muted s14" style={{ padding: 20 }}>No chats here.</p>
+              )
+            ) : null}
           </div>
         </section>
         <section className="chat" aria-label="Chat">

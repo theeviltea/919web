@@ -562,3 +562,4 @@ ul { list-style: none; }
 .vgal-count { position: absolute; right: calc(var(--gutter) + 4px); bottom: 12px; height: 28px; padding: 0 10px; border-radius: 999px; background: rgba(14,26,43,.6); color: #fff; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
 @media (max-width: 860px) { .vgal-m.mob-only { display: block !important; } }
 @media (max-width: 860px) { .pviewer .pv-nav { display: none !important; } .pviewer .pv-img { top: 50% !important; transform: translate(-50%, -50%) !important; height: auto !important; width: calc(100vw - 32px); max-height: calc(100vh - 240px) !important; } }
+.thread mark { background: var(--urgent); color: var(--on-urgent); border-radius: 3px; padding: 0 2px; }

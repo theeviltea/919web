@@ -10,6 +10,7 @@ import { useSession } from '../../data/session';
 import { city } from '../../data/asset';
 import type { FrameStyle } from '../../data/tiers';
 import { PhotoGrid } from '../onboarding/Seeker';
+import { PhoneChange } from '../../ui/phoneChange';
 import { Avatar, Btn, Card, Field, FRAMES, H2, Icon, Initials, Modal, ModalHead, Option, Pill, Select, Toggle, TierBadge, useToast, type IconName } from '../../ui/kit';
 
 const NAV: [string, [string, IconName, string][]][] = [
@@ -194,6 +195,23 @@ export function EditHub() {
   );
 }
 
+// ---------- change phone ----------
+export function SeekerPhone() {
+  const s = useSeeker();
+  const toast = useToast();
+  const nav = useNavigate();
+  return (
+    <SeekerLayout active="Personal info">
+      <PhoneChange
+        current={s.profile.phone}
+        note={s.profile.phone ? 'The old number will stop working for sign-in' : 'Employers never see your number until you apply'}
+        onCancel={() => nav('/profile/personal')}
+        onSaved={(phone) => (s.updateProfile({ phone }), toast('Phone number updated', 'check'), nav('/profile/personal'))}
+      />
+    </SeekerLayout>
+  );
+}
+
 // ---------- personal ----------
 export function EditPersonal() {
   const s = useSeeker();
@@ -223,18 +241,15 @@ export function EditPersonal() {
       </Sec>
       <Sec title="Contacts">
         <div className="grid2">
-          <Field
-            label="Phone"
-            value={p.phone ?? ''}
-            onChange={() => undefined}
-            suffix={
-              p.phone ? (
-                <Pill tone="green" icon="check">
-                  Verified
-                </Pill>
-              ) : undefined
-            }
-          />
+          <div className="field" style={{ alignItems: 'center' }}>
+            <span className="grow col">
+              <span className="lab">Phone · sign-in</span>
+              <span className="s15">{p.phone ?? 'Not added'}</span>
+            </span>
+            <Link to="/profile/phone" className="link s14">
+              {p.phone ? 'Change' : 'Add'}
+            </Link>
+          </div>
           <Field label="Email" value={f.email} onChange={(v) => setF({ ...f, email: v })} type="email" />
         </div>
         <div className="row g10 inset s14 primary-text">
@@ -1006,8 +1021,8 @@ export function SeekerSettings() {
       </Sec>
       <Sec title="Legal" gap={4}>
         <div>
-          <SRow icon="file" title="User agreement" to="/profile/settings#terms" />
-          <SRow icon="lock" title="Privacy policy" to="/profile/settings#privacy" />
+          <SRow icon="file" title="User agreement" to="/legal/terms" />
+          <SRow icon="lock" title="Privacy policy" to="/legal/privacy" />
         </div>
       </Sec>
       <Card style={{ padding: '12px 28px 20px', gap: 8 }}>

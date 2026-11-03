@@ -10,10 +10,12 @@ import { stock } from '../../data/asset';
 import type { Sphere } from '../../data/types';
 import { useSession } from '../../data/session';
 import { Link } from '../../lib/links';
-import { Hero, SphereChips, TalentCard, VacancyRow } from '../../ui/domain';
+import { candidateCard, Hero, SphereChips, TalentCard, VacancyRow } from '../../ui/domain';
+import { candidates, talentSphereLabels } from '../../data/talentPool';
+import { tierRank } from '../../data/tiers';
 import { topCompanies } from '../../data/companies';
 import { FiltersDrawer } from '../../ui/filters';
-import { Avatar, Btn, Card, Empty, FlashTile, H2, Icon, Modal, ModalHead, Option, TierBadge, Toggle, useToast, Initials } from '../../ui/kit';
+import { Avatar, Btn, Card, Empty, FlashTile, H2, Icon, Modal, ModalHead, Option, Tabs, TierBadge, Toggle, useToast, Initials } from '../../ui/kit';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -79,7 +81,7 @@ export function GuestFeed() {
   const list = q.trim() ? feed.list.filter((v) => `${v.title} ${v.company.name} ${v.city}`.toLowerCase().includes(q.trim().toLowerCase())) : feed.list;
   return (
     <main className="page">
-      <Hero eyebrow="Hospitality, events, F&B and modeling" title="Find work. Find people." query={q} onQuery={setQ} placeholder="Role, venue or area" onSubmit={() => undefined} onFilters={() => setDrawer(true)} filters={countFilters(feed.filters)} />
+      <Hero eyebrow="Hospitality, events, F&B and modeling" title="Find work. Find people." query={q} onQuery={setQ} placeholder="Role, venue or area" onSubmit={() => nav(q.trim() ? `/search?q=${encodeURIComponent(q.trim())}` : '/search')} onFilters={() => setDrawer(true)} filters={countFilters(feed.filters)} />
       <div className="layout-r w320 mt24">
         <div className="stack">
           <SphereChips items={sphereItems} value={feed.sphere} onChange={feed.setSphere} urgent={feed.filters.urgent} onUrgent={() => feed.setFilters({ ...feed.filters, urgent: !feed.filters.urgent })} />
@@ -349,8 +351,14 @@ export function SeekerSearch() {
     ...filters.contracts.map((x) => ({ label: x, clear: () => setFilters({ ...filters, contracts: filters.contracts.filter((y) => y !== x) }) })),
     ...(filters.min ? [{ label: `From AED ${filters.min}`, clear: () => setFilters({ ...filters, min: undefined }) }] : []),
   ];
+  // Guests search both vacancies and talent (app: guest/search); talent profiles open behind sign-in.
+  const guest = !user;
+  const tab = guest && sp.get('tab') === 'talent' ? 'talent' : 'vacancies';
+  const [gate, setGate] = useState(false);
+  const people = candidates.filter((c) => !query || `${c.name} ${c.role} ${c.city} ${talentSphereLabels[c.sphere]}`.toLowerCase().includes(query)).sort((a, b) => tierRank(b.tier) - tierRank(a.tier));
+  const setTab = (k: 'vacancies' | 'talent') => setSp({ ...(sp.get('q') ? { q: sp.get('q')! } : {}), ...(k === 'talent' ? { tab: 'talent' } : {}) });
   const submit = () => {
-    setSp(q.trim() ? { q: q.trim() } : {});
+    setSp(q.trim() ? { q: q.trim(), ...(tab === 'talent' ? { tab: 'talent' } : {}) } : tab === 'talent' ? { tab: 'talent' } : {});
     if (q.trim() && user) s.addRecent({ q: q.trim(), filters });
   };
   return (
@@ -406,6 +414,27 @@ export function SeekerSearch() {
           ))}
         </div>
       ) : null}
+      {guest ? (
+        <div className="mt16">
+          <Tabs<'vacancies' | 'talent'>
+            items={[
+              { key: 'vacancies', label: 'Vacancies', n: list.length },
+              { key: 'talent', label: 'Talent', n: people.length },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
+        </div>
+      ) : null}
+      {tab === 'talent' ? (
+        <div className="mt24 stack">
+          <h2 className="s20 strong">{query ? `${people.length} profiles for “${sp.get('q')}”` : `${people.length} profiles`}</h2>
+          <div className="grid6 c4" onClickCapture={(e) => (e.preventDefault(), e.stopPropagation(), setGate(true))}>
+            {people.slice(0, 24).map((c) => candidateCard(c, '/talent-preview'))}
+          </div>
+          {!people.length ? <Empty icon="users" title="No profiles found" text="Try a role like hostess, DJ or model." /> : null}
+        </div>
+      ) : (
       <div className="mt24">
         <div className="stack">
           <div className="row between">
@@ -415,15 +444,27 @@ export function SeekerSearch() {
               Newest
             </span>
           </div>
-          <FeedList list={list} limit={40} />
+          <FeedList list={list} limit={40} guest={guest} />
         </div>
       </div>
+      )}
       </div>
       <aside className="stack wide-only" style={{ position: 'sticky', top: 96 }}>
         {user ? <ProfileStatus /> : null}
         <TopCompanies />
       </aside>
       </div>
+      {gate ? (
+        <Modal onClose={() => setGate(false)} label="Sign in to see profiles" width={480}>
+          <ModalHead title="Sign in to see profiles" sub="Profiles, videos and messages are open to registered employers." onClose={() => setGate(false)} />
+          <Btn h={56} full to="/auth/sign-in">
+            Sign in
+          </Btn>
+          <Btn kind="secondary" h={56} full to="/auth/role">
+            Create an employer account
+          </Btn>
+        </Modal>
+      ) : null}
       {drawer ? <FiltersDrawer value={filters} source={feedVacancies} onClose={() => setDrawer(false)} onApply={(f) => (setFilters(f), setDrawer(false))} /> : null}
     </main>
   );

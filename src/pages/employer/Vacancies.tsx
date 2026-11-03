@@ -9,7 +9,7 @@ import type { ApplicantStatus } from '../../data/hiring';
 import { Link } from '../../lib/links';
 import { VacancyBody } from '../seeker/Vacancy';
 import { candidateCard, money } from '../../ui/domain';
-import { Btn, Card, Crumbs, Empty, Icon, IconBtn, Modal, ModalHead, Option, Pill, Tabs, TierBadge, useToast } from '../../ui/kit';
+import { Btn, Card, Crumbs, Empty, Icon, IconBtn, Modal, ModalHead, Option, Pill, SearchBox, Tabs, TierBadge, useToast } from '../../ui/kit';
 
 const fmtDay = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const ARCHIVE_REASONS = [
@@ -137,8 +137,12 @@ export function MyVacancies() {
   const toast = useToast();
   const [tab, setTab] = useState<'mine' | 'saved'>('mine');
   const [f, setF] = useState<F>('all');
+  const [q, setQ] = useState('');
   const n = (s: HireStatus) => e.vacancies.filter((v) => v.status === s).length;
-  const list = e.vacancies.filter((v) => f === 'all' || v.status === f);
+  const query = q.trim().toLowerCase();
+  // Search in My vacancies: title, role, city and description (app: EmpHiringSearch).
+  const hay = (v: (typeof e.vacancies)[number]) => [v.title, v.meta, v.note, v.detail?.description, v.detail?.role, v.detail?.city].filter(Boolean).join(' ').toLowerCase();
+  const list = e.vacancies.filter((v) => (f === 'all' || v.status === f) && (!query || hay(v).includes(query)));
   const saved = e.savedIds.map(findCandidate).filter(Boolean);
   const hired = Object.values(e.hireAnswers).reduce((s, x) => s + Object.values(x).filter((a) => a === 'hired').length, 0);
   return (
@@ -187,7 +191,12 @@ export function MyVacancies() {
               <span className="s14 strong">$2.99 once</span>
             </section>
           </div>
-          <div className="chips mt24">
+          <div className="row g12 wrap mt24 vac-tools">
+            <div style={{ flex: '1 1 260px', maxWidth: 420 }}>
+              <SearchBox value={q} onChange={setQ} placeholder="Search my vacancies" />
+            </div>
+          </div>
+          <div className="chips mt16">
             {(
               [
                 ['all', 'All', e.vacancies.length],
@@ -210,7 +219,8 @@ export function MyVacancies() {
               <VacCard key={v.id} v={v} />
             ))}
           </div>
-          {!list.length ? <Empty icon="briefcase" title="No vacancies here" text="Post a vacancy — it goes live after a quick check by the 919 team." action={<Btn icon="add" to="/post">Post a vacancy</Btn>} /> : null}
+          {!list.length && query ? <Empty icon="search" title={`Nothing found for “${q.trim()}”`} text="Search looks in the title, role, city and description of your vacancies." action={<Btn kind="secondary" onClick={() => setQ('')}>Clear search</Btn>} /> : null}
+          {!list.length && !query ? <Empty icon="briefcase" title="No vacancies here" text="Post a vacancy — it goes live after a quick check by the 919 team." action={<Btn icon="add" to="/post">Post a vacancy</Btn>} /> : null}
         </>
       ) : (
         <div className="grid6 mt24">

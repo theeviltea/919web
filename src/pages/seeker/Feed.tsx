@@ -1,5 +1,5 @@
 // Vacancy feed (guest and job seeker), search results, guest talent preview, Available today.
-import { Fragment, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { feedVacancies, talents } from '../../data/mock';
 import { spheres, vacancySpheres } from '../../data/dictionaries';
@@ -35,7 +35,7 @@ function useFeed(initial?: Partial<VacancyFilters>) {
 
 const sphereItems = vacancySpheres.map((s) => ({ key: s, label: spheres[s] }));
 
-function FeedList({ list, guest, limit, banner }: { list: typeof feedVacancies; guest?: boolean; limit?: number; banner?: ReactNode }) {
+function FeedList({ list, guest, limit }: { list: typeof feedVacancies; guest?: boolean; limit?: number }) {
   const s = useSeeker();
   const toast = useToast();
   const nav = useNavigate();
@@ -43,24 +43,20 @@ function FeedList({ list, guest, limit, banner }: { list: typeof feedVacancies; 
   if (!list.length) return <Empty icon="search" title="Nothing found" text="Try another sphere or reset the filters." />;
   return (
     <>
-      {shown.map((v, i) => (
-        <Fragment key={v.id}>
-          {/* Guests see the About 919 banner after the first four vacancies. */}
-          {banner && i === 4 ? banner : null}
-          <VacancyRow
-            v={v}
-            to={guest ? `/v/${v.id}` : `/vacancy/${v.id}`}
-            status={guest ? undefined : s.appFor(v.id)?.status}
-            saved={!guest && s.saved.includes(v.id)}
-            onSave={() => {
-              if (guest) return nav('/auth/sign-in');
-              const on = s.toggleSaved(v.id);
-              toast(on ? 'Saved to Applications' : 'Removed from saved', on ? 'bookmark-filled' : 'bookmark');
-            }}
-          />
-        </Fragment>
+      {shown.map((v) => (
+        <VacancyRow
+          key={v.id}
+          v={v}
+          to={guest ? `/v/${v.id}` : `/vacancy/${v.id}`}
+          status={guest ? undefined : s.appFor(v.id)?.status}
+          saved={!guest && s.saved.includes(v.id)}
+          onSave={() => {
+            if (guest) return nav('/auth/sign-in');
+            const on = s.toggleSaved(v.id);
+            toast(on ? 'Saved to Applications' : 'Removed from saved', on ? 'bookmark-filled' : 'bookmark');
+          }}
+        />
       ))}
-      {banner && shown.length <= 4 ? banner : null}
     </>
   );
 }
@@ -86,12 +82,13 @@ export function GuestFeed() {
   const list = q.trim() ? feed.list.filter((v) => `${v.title} ${v.company.name} ${v.city}`.toLowerCase().includes(q.trim().toLowerCase())) : feed.list;
   return (
     <main className="page">
+      <AboutBanner />
       <Hero eyebrow="Hospitality, events, F&B and modeling" title="Find work. Find people." query={q} onQuery={setQ} placeholder="Role, venue or area" onSubmit={() => nav(q.trim() ? `/search?q=${encodeURIComponent(q.trim())}` : '/search')} onFilters={() => setDrawer(true)} filters={countFilters(feed.filters)} />
       <div className="layout-r w320 mt24">
         <div className="stack">
           <SphereChips items={sphereItems} value={feed.sphere} onChange={feed.setSphere} urgent={feed.filters.urgent} onUrgent={() => feed.setFilters({ ...feed.filters, urgent: !feed.filters.urgent })} />
           <ListHead n={list.length} />
-          <FeedList list={list} guest limit={20} banner={<AboutBanner />} />
+          <FeedList list={list} guest limit={20} />
         </div>
         <aside className="stack desk-only">
           <section className="card" style={{ background: 'var(--panel-dark)', color: '#fff', gap: 14 }}>
@@ -133,6 +130,7 @@ export function GuestTalent() {
   const [gate, setGate] = useState(false);
   return (
     <main className="page">
+      <AboutBanner />
       <div className="row between wrap g16" style={{ marginTop: 8 }}>
         <div>
           <h1 className="display d2">Talent on 919</h1>
@@ -148,9 +146,6 @@ export function GuestTalent() {
             <TalentCard name={t.name} role={`${t.role} · ${t.city}`} photo={t.photo} tier={t.tier} frame={t.frame} to="/talent-preview" />
           </div>
         ))}
-      </div>
-      <div className="mt24">
-        <AboutBanner />
       </div>
       {gate ? (
         <Modal onClose={() => setGate(false)} label="Sign in to see profiles" width={480}>
@@ -461,9 +456,6 @@ export function SeekerSearch() {
         {user ? <ProfileStatus /> : null}
         <TopCompanies />
       </aside>
-      </div>
-      <div className="mt24">
-        <AboutBanner />
       </div>
       {gate ? (
         <Modal onClose={() => setGate(false)} label="Sign in to see profiles" width={480}>

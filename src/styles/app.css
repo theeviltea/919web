@@ -563,3 +563,51 @@ ul { list-style: none; }
 @media (max-width: 860px) { .vgal-m.mob-only { display: block !important; } }
 @media (max-width: 860px) { .pviewer .pv-nav { display: none !important; } .pviewer .pv-img { top: 50% !important; transform: translate(-50%, -50%) !important; height: auto !important; width: calc(100vw - 32px); max-height: calc(100vh - 240px) !important; } }
 .thread mark { background: var(--urgent); color: var(--on-urgent); border-radius: 3px; padding: 0 2px; }
+
+/* "About 919" banner (guest feed) — links to the landing. Always dark, on purpose: it's a poster, not a card. */
+.ab { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; min-height: 300px; padding: 28px 28px 76px; border-radius: 28px; overflow: hidden; isolation: isolate; text-decoration: none; color: #fff; background: #16181D; box-shadow: 0 18px 40px rgba(14, 26, 43, 0.18); transition: transform 0.35s cubic-bezier(.2, .9, .3, 1.3), box-shadow 0.35s; }
+.ab:hover { transform: translateY(-3px) rotate(-0.4deg); box-shadow: 0 26px 56px rgba(14, 26, 43, 0.28); }
+.ab:focus-visible { outline: 3px solid var(--urgent); outline-offset: 3px; }
+.ab-bg { position: absolute; inset: -40px; z-index: -1; background: url(../assets/img/pattern-tile-ink.svg) 0 0 / 300px auto; animation: ab-drift 40s linear infinite; }
+.ab-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(60% 80% at 85% 35%, rgba(53, 137, 242, 0.55), transparent 70%), linear-gradient(90deg, #16181D 20%, rgba(22, 24, 29, 0.6) 60%, transparent); }
+.ab-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-width: 0; }
+.ab-tag { padding: 6px 12px; border-radius: 999px; background: var(--urgent); color: #18191C; font-size: 13px; font-weight: 800; transform: rotate(-3deg); }
+.ab-title { position: relative; font-size: 40px; font-weight: 700; line-height: 1.02; letter-spacing: -0.03em; max-width: 12ch; text-wrap: balance; }
+.ab-title::before, .ab-title::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.ab-title::before { color: #FF1E54; mix-blend-mode: screen; animation: ab-glitch 3.2s steps(1) infinite; }
+.ab-title::after { color: #00C2FF; mix-blend-mode: screen; animation: ab-glitch 3.2s steps(1) infinite reverse; }
+.ab:hover .ab-title::before, .ab:hover .ab-title::after { animation-duration: 0.9s; }
+.ab-text { max-width: 44ch; font-size: 15px; line-height: 1.45; color: rgba(255, 255, 255, 0.72); }
+.ab-cta { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 20px; margin-top: 4px; border-radius: 16px; background: #fff; color: #18191C; font-weight: 700; font-size: 15px; }
+.ab-cta svg { transition: transform 0.25s; }
+.ab:hover .ab-cta svg { transform: translateX(4px); }
+.ab-art { position: relative; display: flex; align-items: center; justify-content: center; }
+.ab-logo { position: relative; z-index: 2; animation: ab-bob 3.6s ease-in-out infinite; filter: drop-shadow(6px 0 0 rgba(255, 30, 84, 0.55)) drop-shadow(-6px 0 0 rgba(0, 194, 255, 0.55)); }
+.ab-orbit { position: absolute; left: 50%; top: 50%; width: 0; height: 0; animation: ab-spin 14s linear infinite; }
+.ab:hover .ab-orbit { animation-duration: 4s; }
+.ab-orbit img { position: absolute; max-width: none; width: 58px; height: 58px; margin: -29px; object-fit: contain; transform: rotate(calc(var(--i) * 60deg)) translateX(108px) rotate(calc(var(--i) * -60deg)); }
+.ab-ticker { position: absolute; left: -20px; right: -20px; bottom: 18px; height: 42px; display: flex; align-items: center; overflow: hidden; background: var(--urgent); color: #18191C; transform: rotate(-2deg); }
+.ab-track { display: flex; flex: none; white-space: nowrap; animation: ab-tick 22s linear infinite; }
+.ab-track span { display: inline-flex; align-items: center; gap: 18px; padding-right: 18px; font-family: var(--display); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.02em; }
+.ab-track i { font-style: normal; font-size: 13px; }
+@keyframes ab-drift { to { background-position: 300px -374px; } }
+@keyframes ab-spin { to { transform: rotate(360deg); } }
+@keyframes ab-bob { 0%, 100% { transform: translateY(0) rotate(-4deg) scale(1); } 50% { transform: translateY(-8px) rotate(3deg) scale(1.05); } }
+@keyframes ab-tick { to { transform: translateX(-50%); } }
+@keyframes ab-glitch {
+  0%, 86% { opacity: 0; transform: none; clip-path: inset(0 0 0 0); }
+  87% { opacity: 1; transform: translate(-4px, 1px); clip-path: inset(10% 0 55% 0); }
+  89% { opacity: 1; transform: translate(5px, -2px); clip-path: inset(60% 0 8% 0); }
+  91% { opacity: 1; transform: translate(-3px, 0); clip-path: inset(30% 0 35% 0); }
+  93% { opacity: 1; transform: translate(4px, 2px); clip-path: inset(0 0 75% 0); }
+  95% { opacity: 0; }
+}
+@media (max-width: 860px) {
+  .ab { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 22px 20px 74px; border-radius: 24px; }
+  .ab-art { order: -1; height: 150px; margin: -6px 0 4px; }
+  .ab-art > * { scale: 0.68; }
+  .ab-title { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ab, .ab-bg, .ab-logo, .ab-orbit, .ab-track, .ab-title::before, .ab-title::after { animation: none !important; transition: none !important; }
+}

@@ -1,5 +1,5 @@
 // Vacancy feed (guest and job seeker), search results, guest talent preview, Available today.
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { feedVacancies, talents } from '../../data/mock';
 import { spheres, vacancySpheres } from '../../data/dictionaries';
@@ -15,6 +15,7 @@ import { candidates, talentSphereLabels } from '../../data/talentPool';
 import { tierRank } from '../../data/tiers';
 import { topCompanies } from '../../data/companies';
 import { FiltersDrawer } from '../../ui/filters';
+import { AboutBanner } from '../../ui/aboutBanner';
 import { Avatar, Btn, Card, Empty, FlashTile, H2, Icon, Modal, ModalHead, Option, Tabs, TierBadge, Toggle, useToast, Initials } from '../../ui/kit';
 
 const greeting = () => {
@@ -34,7 +35,7 @@ function useFeed(initial?: Partial<VacancyFilters>) {
 
 const sphereItems = vacancySpheres.map((s) => ({ key: s, label: spheres[s] }));
 
-function FeedList({ list, guest, limit }: { list: typeof feedVacancies; guest?: boolean; limit?: number }) {
+function FeedList({ list, guest, limit, banner }: { list: typeof feedVacancies; guest?: boolean; limit?: number; banner?: ReactNode }) {
   const s = useSeeker();
   const toast = useToast();
   const nav = useNavigate();
@@ -42,20 +43,24 @@ function FeedList({ list, guest, limit }: { list: typeof feedVacancies; guest?: 
   if (!list.length) return <Empty icon="search" title="Nothing found" text="Try another sphere or reset the filters." />;
   return (
     <>
-      {shown.map((v) => (
-        <VacancyRow
-          key={v.id}
-          v={v}
-          to={guest ? `/v/${v.id}` : `/vacancy/${v.id}`}
-          status={guest ? undefined : s.appFor(v.id)?.status}
-          saved={!guest && s.saved.includes(v.id)}
-          onSave={() => {
-            if (guest) return nav('/auth/sign-in');
-            const on = s.toggleSaved(v.id);
-            toast(on ? 'Saved to Applications' : 'Removed from saved', on ? 'bookmark-filled' : 'bookmark');
-          }}
-        />
+      {shown.map((v, i) => (
+        <Fragment key={v.id}>
+          {/* Guests see the About 919 banner after the first four vacancies. */}
+          {banner && i === 4 ? banner : null}
+          <VacancyRow
+            v={v}
+            to={guest ? `/v/${v.id}` : `/vacancy/${v.id}`}
+            status={guest ? undefined : s.appFor(v.id)?.status}
+            saved={!guest && s.saved.includes(v.id)}
+            onSave={() => {
+              if (guest) return nav('/auth/sign-in');
+              const on = s.toggleSaved(v.id);
+              toast(on ? 'Saved to Applications' : 'Removed from saved', on ? 'bookmark-filled' : 'bookmark');
+            }}
+          />
+        </Fragment>
       ))}
+      {banner && shown.length <= 4 ? banner : null}
     </>
   );
 }
@@ -86,7 +91,7 @@ export function GuestFeed() {
         <div className="stack">
           <SphereChips items={sphereItems} value={feed.sphere} onChange={feed.setSphere} urgent={feed.filters.urgent} onUrgent={() => feed.setFilters({ ...feed.filters, urgent: !feed.filters.urgent })} />
           <ListHead n={list.length} />
-          <FeedList list={list} guest limit={20} />
+          <FeedList list={list} guest limit={20} banner={<AboutBanner />} />
         </div>
         <aside className="stack desk-only">
           <section className="card" style={{ background: 'var(--panel-dark)', color: '#fff', gap: 14 }}>
@@ -143,6 +148,9 @@ export function GuestTalent() {
             <TalentCard name={t.name} role={`${t.role} · ${t.city}`} photo={t.photo} tier={t.tier} frame={t.frame} to="/talent-preview" />
           </div>
         ))}
+      </div>
+      <div className="mt24">
+        <AboutBanner />
       </div>
       {gate ? (
         <Modal onClose={() => setGate(false)} label="Sign in to see profiles" width={480}>
@@ -453,6 +461,9 @@ export function SeekerSearch() {
         {user ? <ProfileStatus /> : null}
         <TopCompanies />
       </aside>
+      </div>
+      <div className="mt24">
+        <AboutBanner />
       </div>
       {gate ? (
         <Modal onClose={() => setGate(false)} label="Sign in to see profiles" width={480}>

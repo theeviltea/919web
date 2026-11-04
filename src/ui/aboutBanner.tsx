@@ -11,7 +11,7 @@ const SHAPES = [star8, ring, flower, rhombus];
 
 export function AboutBanner() {
   return (
-    <a className="ab" href={ABOUT_URL} aria-label="About 919: how it works for talent and employers">
+    <a className="ab" href={ABOUT_URL} target="_blank" rel="noopener noreferrer" aria-label="About 919: how it works for talent and employers (opens in a new tab)">
       <span className="ab-art" aria-hidden="true">
         <span className="ab-orbit">
           {SHAPES.map((s, i) => (

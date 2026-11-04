@@ -11,6 +11,15 @@ import { SeekerNotifications } from '../pages/seeker/Notifications';
 import { EmployerNotifications } from '../pages/employer/Company';
 import { Avatar, Btn, Icon, IconBtn, Initials, Logo, TierBadge, useOutside, type IconName } from '../ui/kit';
 
+/** ↗ next to links that open the landing in a new tab. */
+function ExtMark({ size = 12 }: { size?: number }) {
+  return (
+    <svg className="ext-mark" width={size} height={size} viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M3.5 2.5h6v6M9.5 2.5 2.5 9.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 type Item = { to: string; label: string; icon: IconName; badge?: number; end?: boolean };
 
 function TopNav({ items, right }: { items: Item[]; right: React.ReactNode }) {
@@ -27,8 +36,9 @@ function TopNav({ items, right }: { items: Item[]; right: React.ReactNode }) {
               {it.badge ? <span className="badge">{it.badge}</span> : null}
             </NavLink>
           ))}
-          <a href={ABOUT_URL} className="navlink">
+          <a href={ABOUT_URL} className="navlink ext" target="_blank" rel="noopener noreferrer">
             About 919
+            <ExtMark />
           </a>
         </nav>
         <span className="grow" />
@@ -81,12 +91,14 @@ function AccountMenu({ trigger, head, links, signOut }: { trigger: React.ReactNo
   const ref = useOutside<HTMLDivElement>(open, close);
   const item = (l: MenuLink) =>
     l.href ? (
-      <a key={l.label} href={l.href} className="mi" onClick={close}>
+      <a key={l.label} href={l.href} className="mi" onClick={close} target="_blank" rel="noopener noreferrer">
         <span className="mi-ico">
           <Icon name={l.icon} size={18} />
         </span>
         <span className="grow">{l.label}</span>
-        <Icon name="chevron-right" size={16} style={{ color: 'var(--text-light-secondary)' }} />
+        <span style={{ color: 'var(--text-light-secondary)', display: 'flex' }}>
+          <ExtMark size={14} />
+        </span>
       </a>
     ) : l.to ? (
       <Link key={l.label} to={l.to} className="mi" onClick={close}>
@@ -158,8 +170,9 @@ export function GuestShell() {
         items={items}
         right={
           <>
-            <a href={ABOUT_URL} className="link s14 mob-only" style={{ padding: '0 6px' }}>
+            <a href={ABOUT_URL} className="link s14 mob-only ext" style={{ padding: '0 6px' }} target="_blank" rel="noopener noreferrer">
               About 919
+              <ExtMark />
             </a>
             <Btn kind="secondary" h={44} to="/auth/sign-in">
               Sign in

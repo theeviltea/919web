@@ -108,6 +108,8 @@ export const vacancies: Vacancy[] = [
     cover: img.waiter,
     photos: [img.waiter, img.misc, img.barber, img.dubai1, img.hostess, img.dubai2],
     details: { role: 'Hostess, beach restaurant', gender: 'Female', age: '21–25' },
+    description:
+      "Welcome guests at the hotel's beach restaurant, take orders and serve food and drinks during lunch and dinner. Previous experience in a five-star venue is a plus.\n\nConditions: 8-hour shifts, 5 days a week. Uniform, staff meals and transport provided.\nSalary is paid on the 1st of every month.\n\nWhatsApp: +971501234567\nCall: +971 4 123 4567\nSend your CV to hr@dives-holding.ae",
     requirements: ['English — native', 'Age 21–25', 'Video presentation'],
   }),
   base({

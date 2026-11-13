@@ -644,3 +644,15 @@ a.an-tr:hover .semi { color: var(--link); }
 }
 .prof-side-m { display: none !important; }
 @media (max-width: 860px) { .prof-side-m { display: flex !important; } .prof-side-d { display: none !important; } }
+
+/* Vacancy description: contacts the employer left, as buttons */
+.desc { display: block; }
+.desc-line { display: block; }
+.desc-gap { display: block; height: .6em; }
+.contact-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; margin: 2px 0; vertical-align: middle; border-radius: 10px; border: 1px solid var(--stroke); background: var(--surface); color: var(--text-primary); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: background .15s, border-color .15s; }
+.contact-btn:hover { background: var(--back); border-color: var(--text-tertiary, var(--stroke)); }
+.contact-btn:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.contact-btn svg { flex: none; }
+.leave-contact { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; border-radius: 16px; background: var(--input); color: var(--text-headline); font-weight: 600; font-size: 16px; }
+.leave-tip { display: flex; align-items: flex-start; gap: 10px; color: var(--text-primary); font-size: 14px; line-height: 20px; }
+.leave-tip svg { flex: none; margin-top: 1px; color: var(--success-text); }

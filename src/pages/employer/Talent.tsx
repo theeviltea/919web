@@ -7,6 +7,7 @@ import { tierRank } from '../../data/tiers';
 import { allCountries, citiesFor } from '../../data/registration';
 import { toggleIn } from '../../data/filters';
 import { candidateCard, Hero } from '../../ui/domain';
+import { CompletenessCard, MatchCard } from './Analytics';
 import { Link } from '../../lib/links';
 import { ProfileView } from '../seeker/People';
 import { Btn, CheckRow, Drawer, FlashTile, H2, Icon, Modal, ModalHead, Pill, Select, Tabs, useToast, Avatar, Field } from '../../ui/kit';
@@ -467,6 +468,12 @@ export function CandidatePage() {
         contacts
         c={c}
         back={{ to: '/hire', label: 'Talent' }}
+        side={
+          <>
+            <MatchCard c={c} />
+            <CompletenessCard c={c} />
+          </>
+        }
         actions={
           <>
             <Btn h={56} full icon="message" onClick={contact}>

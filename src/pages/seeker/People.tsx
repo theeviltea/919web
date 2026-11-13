@@ -230,7 +230,7 @@ export function People() {
 
 // ---------- Profile view (People → person, Talent → candidate) ----------
 /** `contacts`: portfolio and social links. Only employers see them; seekers browsing People never do (personal data). */
-export function ProfileView({ c, actions, back, contacts = false }: { c: Candidate; actions?: ReactNode; back: { to: string; label: string }; contacts?: boolean }) {
+export function ProfileView({ c, actions, back, contacts = false, side }: { c: Candidate; actions?: ReactNode; back: { to: string; label: string }; contacts?: boolean; side?: ReactNode }) {
   const p = profileOf(c);
   const [viewer, setViewer] = useState<number | null>(null);
   const [player, setPlayer] = useState<number | null>(null);
@@ -277,6 +277,8 @@ export function ProfileView({ c, actions, back, contacts = false }: { c: Candida
       </section>
       <div className="layout-r mt16">
         <div className="stack">
+          {/* Phones: the employer widgets (match, profile filled) come first, before the media. */}
+          {side ? <div className="stack prof-side-m">{side}</div> : null}
           <Card>
             <H2
               right={
@@ -336,6 +338,7 @@ export function ProfileView({ c, actions, back, contacts = false }: { c: Candida
           </Card>
         </div>
         <aside className="stack">
+          {side ? <div className="stack prof-side-d">{side}</div> : null}
           <Card>
             <H2>About</H2>
             <p className="primary-text lh">{p.about}</p>

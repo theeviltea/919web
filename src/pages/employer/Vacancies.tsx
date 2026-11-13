@@ -1,6 +1,7 @@
 // Employer vacancies: hub (KPIs, status filter, saved talent), own vacancy page with actions, applicants.
 import { useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { VacancyAnalytics, VacancyViewsCard } from './Analytics';
 import { company, savedLabels, useEmployer, type HireStatus, type MyVacancy } from '../../data/employer';
 import { applicantLine, asPublicVacancy, candidateOf } from '../../data/hiring';
 import { findCandidate } from '../../data/talentPool';
@@ -135,7 +136,8 @@ type F = 'all' | HireStatus;
 export function MyVacancies() {
   const e = useEmployer();
   const toast = useToast();
-  const [tab, setTab] = useState<'mine' | 'saved'>('mine');
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<'mine' | 'analytics' | 'saved'>(params.get('tab') === 'analytics' ? 'analytics' : 'mine');
   const [f, setF] = useState<F>('all');
   const [q, setQ] = useState('');
   const n = (s: HireStatus) => e.vacancies.filter((v) => v.status === s).length;
@@ -152,6 +154,7 @@ export function MyVacancies() {
         <Tabs
           items={[
             { key: 'mine', label: 'My vacancies', n: e.vacancies.length },
+            { key: 'analytics', label: 'Analytics' },
             { key: 'saved', label: 'Saved talent', n: saved.length },
           ]}
           value={tab}
@@ -222,6 +225,8 @@ export function MyVacancies() {
           {!list.length && query ? <Empty icon="search" title={`Nothing found for “${q.trim()}”`} text="Search looks in the title, role, city and description of your vacancies." action={<Btn kind="secondary" onClick={() => setQ('')}>Clear search</Btn>} /> : null}
           {!list.length && !query ? <Empty icon="briefcase" title="No vacancies here" text="Post a vacancy — it goes live after a quick check by the 919 team." action={<Btn icon="add" to="/post">Post a vacancy</Btn>} /> : null}
         </>
+      ) : tab === 'analytics' ? (
+        <VacancyAnalytics initial={params.get('v') ?? undefined} />
       ) : (
         <div className="grid6 mt24">
           {saved.map((c) => (
@@ -351,7 +356,7 @@ export function MyVacancyPage() {
       <div className="grid2" style={{ gap: 12 }}>
         <div className="stat">
           <div className="n">{d.views.toLocaleString('en-US').replace(/,/g, ' ')}</div>
-          <div className="s14 semi">Views</div>
+          <div className="s14 semi">Views in total</div>
         </div>
         <div className="stat">
           <div className="n">{apps.length}</div>
@@ -359,6 +364,7 @@ export function MyVacancyPage() {
           <div className="small muted">{fresh} new</div>
         </div>
       </div>
+      <VacancyViewsCard v={v} />
     </>
   );
   return (

@@ -672,7 +672,74 @@ export const initialEmpNotifs: EmpNotif[] = [
   },
 ];
 
-export type Plan = "free" | "premium" | "canceled";
+export type Plan = "free" | "premium" | "super" | "canceled";
+export type PaidPlan = "premium" | "super";
+
+/**
+ * Employer plans (§12). Free: 1 active vacancy, browse profiles, chats only via applications.
+ * Premium $99.99 a month, first month free: 10 active vacancies, 10 chat requests to candidates a month.
+ * Super Premium $249.99 a month ($199.99 billed yearly): unlimited vacancies and direct messages.
+ * `canceled` is Premium until the end of the paid period.
+ */
+export const EMP_PLANS: Record<
+  PaidPlan,
+  {
+    name: string;
+    price: string;
+    note: string;
+    vacancies: number;
+    requests: number;
+    perks: [string, string][];
+  }
+> = {
+  premium: {
+    name: "Premium",
+    price: "$99.99",
+    note: "First month free",
+    vacancies: 10,
+    requests: 10,
+    perks: [
+      ["Up to 10 active vacancies", "Free plan includes 1"],
+      [
+        "10 chat requests a month",
+        "Write to candidates from their profile, video or search",
+      ],
+      [
+        "Vacancy analytics",
+        "Views per day, who viewed and where they came from",
+      ],
+    ],
+  },
+  super: {
+    name: "Super Premium",
+    price: "$249.99",
+    note: "or $199.99 a month, billed yearly",
+    vacancies: Infinity,
+    requests: Infinity,
+    perks: [
+      ["Unlimited vacancies", "Post as many as you need at once"],
+      [
+        "Unlimited direct messages",
+        "Message any candidate right away, no request needed",
+      ],
+      [
+        "Vacancy analytics",
+        "Views per day, who viewed and where they came from",
+      ],
+    ],
+  },
+};
+export const FREE_VACANCIES = 1;
+export const tierOfPlan = (p: Plan): "free" | PaidPlan =>
+  p === "canceled" ? "premium" : p;
+export const planName = (p: Plan) =>
+  tierOfPlan(p) === "free" ? "Free" : EMP_PLANS[tierOfPlan(p) as PaidPlan].name;
+export const vacancyLimitOf = (p: Plan) =>
+  tierOfPlan(p) === "free"
+    ? FREE_VACANCIES
+    : EMP_PLANS[tierOfPlan(p) as PaidPlan].vacancies;
+export const requestLimitOf = (p: Plan) =>
+  tierOfPlan(p) === "free" ? 0 : EMP_PLANS[tierOfPlan(p) as PaidPlan].requests;
 export type Rep = {
   firstName: string;
   lastName: string;
@@ -869,6 +936,8 @@ type Store = {
   setInfo: (u: Partial<CompanyInfo>) => void;
   plan: Plan;
   setPlan: (p: Plan) => void;
+  /** Chat requests sent this month (Premium allows 10). */
+  requestsUsed: number;
   /** Trade licence and the verified badge (EmpVerify*). */
   licence: Licence;
   verified: boolean;
@@ -930,7 +999,7 @@ const Ctx = createContext<Store | null>(null);
 function demoPlan(): Plan {
   try {
     const v = sessionStorage.getItem("919-demo-plan");
-    return v === "free" || v === "canceled" ? v : "premium";
+    return v === "free" || v === "canceled" || v === "super" ? v : "premium";
   } catch {
     return "premium";
   }
@@ -947,6 +1016,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [rep, setRepState] = useState(initialRep);
   const [info, setInfoState] = useState(initialInfo);
   const [plan, setPlan] = useState<Plan>(demoPlan);
+  const [requestsUsed, setRequestsUsed] = useState(3);
   const [licence, setLicence] = useState<Licence>(initialLicence);
   const [licencePromptSeen, setPromptSeen] = useState(false);
   const [hireAnswers, setHireAnswers] = useState(initialHireAnswers);
@@ -1209,13 +1279,15 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         const body =
           text.trim() ||
           `Hi ${first}! We’d like to talk about working together.`;
+        // Super Premium writes directly; Premium sends a chat request the candidate accepts (10 a month).
+        const direct = tierOfPlan(plan) === "super";
         const sent = [
           withId({ kind: "date", label: "Today" }),
           withId({
             kind: "event",
             tone: "info",
             icon: "message",
-            text: "You sent a contact request",
+            text: direct ? "You started a chat" : "You sent a contact request",
             time: clock(),
           }),
           withId({ kind: "text", mine: true, text: body, time: clock() }),
@@ -1240,6 +1312,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
           );
           return id;
         }
+        if (!direct) setRequestsUsed((n) => n + 1);
         setThreads((ts) => [
           {
             id,
@@ -1248,7 +1321,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
             photo: cand.photo,
             time: "now",
             direct: true,
-            request: "pending",
+            request: direct ? undefined : "pending",
             last: body,
             mine: true,
             unread: 0,
@@ -1257,6 +1330,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
           },
           ...ts,
         ]);
+        if (direct) return id;
         // Demo: the candidate accepts a little later.
         setTimeout(() => {
           setThreads((ts) =>
@@ -1329,6 +1403,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       setInfo: (u) => setInfoState((x) => ({ ...x, ...u })),
       plan,
       setPlan,
+      requestsUsed,
       licence,
       verified: licence.status === "verified",
       sendLicence: (file) => {
@@ -1396,6 +1471,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       rep,
       info,
       plan,
+      requestsUsed,
       licence,
       licencePromptSeen,
       members,

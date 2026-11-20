@@ -1,7 +1,7 @@
 // Employer account: company details, verification by trade licence, team and roles, subscription, settings.
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { company, EMPLOYER_LOSSES, initialsOf, useEmployer, type Member } from '../../data/employer';
+import { company, EMP_PLANS, EMPLOYER_LOSSES, initialsOf, planName, tierOfPlan, useEmployer, type Member, type PaidPlan } from '../../data/employer';
 import { allCountries, citiesFor, positions } from '../../data/registration';
 import { useSession } from '../../data/session';
 import { personFor } from '../../data/asset';
@@ -355,13 +355,55 @@ export function CompanySubscription() {
   const e = useEmployer();
   const toast = useToast();
   const [cancel, setCancel] = useState(false);
-  const inc: [IconName, string, string][] = [
-    ['briefcase', 'Multiple job postings', 'Publish as many vacancies as you need at once'],
-    ['message', 'Direct messages to candidates', 'Contact any candidate from their profile, video or search'],
-    ['view', 'Vacancy analytics', 'Views per day, who viewed and where they came from'],
-    ['star', 'More hiring opportunities', 'Premium badge on your company and vacancies'],
-  ];
-  const premium = e.plan !== 'free';
+  const tier = tierOfPlan(e.plan);
+  const subscribe = (p: PaidPlan) => (e.setPlan(p), toast(p === 'premium' ? 'Premium is active. Your first month is free' : 'Super Premium is active', 'star'));
+  const card = (p: PaidPlan) => {
+    const x = EMP_PLANS[p];
+    const current = tier === p && e.plan !== 'canceled';
+    return (
+      <Card key={p} pad={28} style={{ gap: 16, flex: '1 1 320px', border: current ? '2px solid var(--premium)' : undefined }}>
+        <div className="row between g8">
+          <span className="s20 strong">{x.name}</span>
+          {p === 'premium' ? <Pill tone="green">First month free</Pill> : null}
+        </div>
+        <div>
+          <span className="display" style={{ fontSize: 32 }}>
+            {x.price}
+          </span>{' '}
+          <span className="s14 muted semi">/ month</span>
+          {p === 'super' ? (
+            <div className="small muted" style={{ marginTop: 4 }}>
+              {x.note}
+            </div>
+          ) : null}
+        </div>
+        <div className="col g12 grow">
+          {x.perks.map(([t, d]) => (
+            <div key={t} className="row top g12">
+              <span className="tile" style={{ width: 32, height: 32, background: 'var(--premium-back)', color: 'var(--premium-strong)', borderRadius: 10, flex: 'none' }}>
+                <Icon name="check" size={16} />
+              </span>
+              <div>
+                <div className="s15 strong">{t}</div>
+                <div className="small muted" style={{ marginTop: 2 }}>
+                  {d}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {current ? (
+          <Btn kind="secondary" h={48} full disabled>
+            Your plan
+          </Btn>
+        ) : (
+          <Btn kind="premium" h={48} full onClick={() => subscribe(p)}>
+            {tier === 'free' && p === 'premium' ? 'Start free month' : tier === 'super' && p === 'premium' ? 'Switch to Premium' : `Get ${x.name}`}
+          </Btn>
+        )}
+      </Card>
+    );
+  };
   return (
     <EmpLayout active="Subscription">
       <section className="card row g20" style={{ background: 'var(--panel-dark)', color: '#fff', flexDirection: 'row', alignItems: 'center' }}>
@@ -370,77 +412,66 @@ export function CompanySubscription() {
         </span>
         <div className="grow">
           <div className="small strong" style={{ color: '#FFB27A' }}>
-            {e.plan === 'premium' ? 'Subscription active' : e.plan === 'canceled' ? 'Canceled · Premium until 9 Nov 2026' : 'Free plan'}
+            {e.plan === 'canceled' ? 'Canceled · Premium until 9 Nov 2026' : tier === 'free' ? 'Free plan' : 'Subscription active'}
           </div>
           <div className="display d2" style={{ marginTop: 4, fontSize: 28 }}>
-            {premium ? 'Premium' : '919 Premium · $3.99 / month'}
+            {planName(e.plan)}
           </div>
-          <div style={{ marginTop: 6, color: 'var(--panel-dark-muted)' }}>{premium ? 'You can publish more vacancies and send direct messages to candidates.' : 'On the Free plan you have 1 active vacancy and chat only with applicants.'}</div>
+          <div style={{ marginTop: 6, color: 'var(--panel-dark-muted)' }}>
+            {tier === 'free'
+              ? 'On the Free plan you have 1 active vacancy, browse talent profiles and chat only with applicants.'
+              : tier === 'super'
+                ? 'Unlimited vacancies and direct messages to any candidate.'
+                : `Up to 10 active vacancies and 10 chat requests a month · ${e.requestsUsed} of 10 used.`}
+          </div>
         </div>
-        {!premium ? (
-          <Btn kind="premium" h={52} onClick={() => (e.setPlan('premium'), toast('You’re on Premium', 'star'))}>
-            Get Premium
-          </Btn>
-        ) : null}
       </section>
-      <div className="layout-r w360" style={{ gap: 16 }}>
-        <Sec title="What’s included">
-          <div className="col g10">
-            {inc.map(([i, t, x]) => (
-              <div key={t} className="row top g12 inset" style={{ padding: 14 }}>
-                <span className="tile" style={{ width: 40, height: 40, background: 'var(--premium-back)', color: 'var(--premium-strong)', borderRadius: 12 }}>
-                  <Icon name={i} />
-                </span>
-                <div>
-                  <div className="s15 strong">{t}</div>
-                  <div className="small muted" style={{ marginTop: 2 }}>
-                    {x}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Sec>
-        {premium ? (
-          <div className="stack">
-            <Sec title="Subscription status" gap={6}>
-              <div>
-                {[
-                  ['Plan', 'Monthly subscription'],
-                  ['Price', '$3.99 / month'],
-                  ['Status', e.plan === 'canceled' ? 'Canceled' : 'Active'],
-                  [e.plan === 'canceled' ? 'Active until' : 'Next payment', '9 Nov 2026'],
-                  ['Payment', 'Card •••• 4242'],
-                ].map(([a, b]) => (
-                  <div key={a} className="kv">
-                    <span>{a}</span>
-                    <span style={a === 'Status' ? { color: e.plan === 'canceled' ? 'var(--danger-text)' : 'var(--success-text)' } : undefined}>{b}</span>
-                  </div>
-                ))}
-              </div>
-            </Sec>
-            <Card pad={20} style={{ gap: 8 }}>
-              {e.plan === 'canceled' ? (
-                <Btn kind="premium" h={48} full onClick={() => (e.setPlan('premium'), toast('Subscription renewed', 'star'))}>
-                  Renew subscription
-                </Btn>
-              ) : (
-                <>
-                  <button className="strong danger" style={{ height: 40 }} onClick={() => setCancel(true)}>
-                    Cancel subscription
-                  </button>
-                  <div className="small muted lh" style={{ textAlign: 'center' }}>
-                    If you cancel, you keep Premium until the end of the paid period — 9 Nov 2026.
-                  </div>
-                </>
-              )}
-            </Card>
-          </div>
-        ) : null}
+      <div className="row g16" style={{ flexWrap: 'wrap', alignItems: 'stretch' }}>
+        {(['premium', 'super'] as const).map(card)}
       </div>
+      {tier !== 'free' ? (
+        <div className="layout-r w360" style={{ gap: 16 }}>
+          <Sec title="Subscription status" gap={6}>
+            <div>
+              {[
+                ['Plan', `${planName(e.plan)} · monthly`],
+                ['Price', `${EMP_PLANS[tier as PaidPlan].price} / month`],
+                ['Status', e.plan === 'canceled' ? 'Canceled' : 'Active'],
+                [e.plan === 'canceled' ? 'Active until' : 'Next payment', '9 Nov 2026'],
+                ['Payment', 'Card •••• 4242'],
+              ].map(([a, b]) => (
+                <div key={a} className="kv">
+                  <span>{a}</span>
+                  <span style={a === 'Status' ? { color: e.plan === 'canceled' ? 'var(--danger-text)' : 'var(--success-text)' } : undefined}>{b}</span>
+                </div>
+              ))}
+            </div>
+          </Sec>
+          <Card pad={20} style={{ gap: 8 }}>
+            {e.plan === 'canceled' ? (
+              <Btn kind="premium" h={48} full onClick={() => (e.setPlan('premium'), toast('Subscription renewed', 'star'))}>
+                Renew subscription
+              </Btn>
+            ) : (
+              <>
+                <button className="strong danger" style={{ height: 40 }} onClick={() => setCancel(true)}>
+                  Cancel subscription
+                </button>
+                <div className="small muted lh" style={{ textAlign: 'center' }}>
+                  If you cancel, you keep {planName(e.plan)} until the end of the paid period — 9 Nov 2026.
+                </div>
+              </>
+            )}
+          </Card>
+        </div>
+      ) : (
+        <p className="small muted" style={{ textAlign: 'center' }}>
+          Billed monthly to your card. Cancel any time. Terms · Privacy
+        </p>
+      )}
       {cancel ? (
         <Modal onClose={() => setCancel(false)} label="Cancel subscription" width={460}>
-          <ModalHead title="Cancel Premium?" sub="You keep Premium until 9 Nov 2026. Then: 1 active vacancy and chats only with applicants." onClose={() => setCancel(false)} />
+          <ModalHead title={`Cancel ${planName(e.plan)}?`} sub={`You keep ${planName(e.plan)} until 9 Nov 2026. Then: 1 active vacancy and chats only with applicants.`} onClose={() => setCancel(false)} />
           <div className="row g8">
             <Btn kind="secondary" style={{ flex: 1 }} onClick={() => setCancel(false)}>
               Keep it
@@ -474,7 +505,7 @@ export function CompanySettings() {
         <div>
           <SRow icon="verified" title="Verification" sub={e.verified ? `Trade licence · verified ${e.licence.checkedAt ?? ''}` : 'Not verified'} to="/company/verification" right={<span className="row g8">{e.verified ? <Pill tone="blue">Verified</Pill> : null}<Icon name="chevron-right" /></span>} />
           <SRow icon="users" title="Team and roles" sub={`${e.members.length} members${e.joinRequests.length ? ` · ${e.joinRequests.length} join request` : ''}`} to="/company/team" />
-          <SRow icon="star" title="Subscription" sub={e.plan === 'free' ? 'Free plan' : 'Renews 9 Nov 2026'} to="/company/subscription" right={<span className="row g8">{e.plan !== 'free' ? <Pill tone="orange">Premium</Pill> : null}<Icon name="chevron-right" /></span>} />
+          <SRow icon="star" title="Subscription" sub={e.plan === 'free' ? 'Free plan · 1 active vacancy' : e.plan === 'canceled' ? 'Premium until 9 Nov 2026' : `${planName(e.plan)} · renews 9 Nov 2026`} to="/company/subscription" right={<span className="row g8">{e.plan !== 'free' ? <Pill tone="orange">{planName(e.plan)}</Pill> : null}<Icon name="chevron-right" /></span>} />
         </div>
       </Sec>
       <Sec title="Legal" gap={4}>

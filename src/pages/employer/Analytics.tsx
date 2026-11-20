@@ -192,7 +192,7 @@ function AnalyticsLocked({ initial }: { initial?: string }) {
           Get Premium
         </Btn>
         <p className="small muted center" style={{ margin: 0 }}>
-          From $3.99 a month · cancel any time
+          Premium: first month free · cancel any time
         </p>
       </div>
     </div>

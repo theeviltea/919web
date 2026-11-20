@@ -296,8 +296,8 @@ export function EditGeneral() {
   };
   return (
     <SeekerLayout active="General">
-      <Sec title="Photos" right={<span className="s14 strong muted">{photos.length} / {s.plan === 'free' ? 10 : 20}</span>}>
-        <PhotoGrid photos={photos} onChange={setPhotos} max={s.plan === 'free' ? 10 : 20} cols={6} coverLabel="Cover" />
+      <Sec title="Photos" right={<span className="s14 strong muted">{photos.length} / {s.plan === 'max' ? 20 : 10}</span>}>
+        <PhotoGrid photos={photos} onChange={setPhotos} max={s.plan === 'max' ? 20 : 10} cols={6} coverLabel="Cover" />
         <div className="small muted">The first photo is your cover.</div>
       </Sec>
       {max ? (
@@ -805,11 +805,11 @@ export function Plans() {
     </div>
   );
   const rows: [string, string, string, string][] = [
-    ['Photos', '10', '20', '20'],
-    ['Videos', '1', '5', '5'],
-    ['Applications', '10', 'Unlimited', 'Unlimited'],
+    ['Applications a month', '5', '15', 'Unlimited'],
+    ['Priority in search', '—', '✓', 'Highest'],
+    ['Photos', '10', '10', '20'],
+    ['Videos', '1', '1', '5'],
     ['Badge', '—', 'Blue star', 'Gold star'],
-    ['Top of search for employers', '—', '—', '✓'],
     ['Profile frame', '—', '—', '3 styles'],
     ['Custom profile header', '—', '—', '✓'],
   ];
@@ -829,8 +829,8 @@ export function Plans() {
         </div>
       </Card>
       <div className="row top g16" style={{ flexWrap: 'wrap', alignItems: 'stretch' }}>
-        {plan('Premium', '$2.99', ['Unlimited applications', 'Up to 20 photos and 5 videos', 'Blue star badge on your profile'], false)}
-        {plan('Max', '$5.99', ['Everything in Premium', 'Always at the top for employers', 'Profile frame, 3 styles', 'Your own profile header'], true)}
+        {plan('Premium', '$14.99', ['15 applications a month', 'Priority in search', 'Blue star badge on your profile'], false)}
+        {plan('Max', '$24.99', ['Unlimited applications', 'Highest priority in search', '20 photos and 5 videos', 'Profile style: frame and header', 'Gold star badge'], true)}
       </div>
       <Sec title="Compare plans" gap={4}>
         <div style={{ overflowX: 'auto' }}>
@@ -873,16 +873,15 @@ export function SeekerSubscription() {
   const max = s.plan === 'max';
   const inc: [IconName, string, string][] = max
     ? [
-        ['star', 'Always at the top for employers', 'First in Talents, search and recommendations'],
-        ['sparkles', 'Profile frame', 'Choose one of 3 gradient frames'],
-        ['image', 'Custom profile header', 'Your own cover photo at the top of the profile'],
+        ['star', 'Highest priority in search', 'First in Talents, search and recommendations'],
         ['check-double', 'Unlimited applications', 'Apply to as many jobs as you want'],
         ['video', '20 photos and 5 videos', 'Show more of your work in the profile'],
+        ['sparkles', 'Profile style', 'A gradient frame and your own cover photo at the top'],
         ['verified', 'Gold star badge', 'On your photo and next to your name everywhere in 919'],
       ]
     : [
-        ['check-double', 'Unlimited applications', 'Apply to as many jobs as you want'],
-        ['video', '20 photos and 5 videos', 'Show more of your work in the profile'],
+        ['check-double', '15 applications a month', 'Three times more than on Free'],
+        ['star', 'Priority in search', 'Employers see you above Free profiles'],
         ['verified', 'Blue star badge', 'On your photo and next to your name everywhere in 919'],
       ];
   return (
@@ -896,7 +895,7 @@ export function SeekerSubscription() {
           <div className="display d2" style={{ marginTop: 4, fontSize: 28 }}>
             {max ? 'Max' : 'Premium'}
           </div>
-          <div style={{ marginTop: 6, color: 'var(--panel-dark-muted)' }}>{max ? 'You’re at the top for employers, with your frame, header and unlimited applications.' : 'Unlimited applications and a blue star badge.'}</div>
+          <div style={{ marginTop: 6, color: 'var(--panel-dark-muted)' }}>{max ? 'You’re at the top for employers, with unlimited applications, your frame and header.' : '15 applications a month and priority in search.'}</div>
         </div>
       </section>
       <div className="layout-r w360" style={{ gap: 16 }}>
@@ -922,7 +921,7 @@ export function SeekerSubscription() {
             <div>
               {[
                 ['Plan', `${max ? 'Max' : 'Premium'} · monthly`],
-                ['Price', max ? '$5.99 / month' : '$2.99 / month'],
+                ['Price', max ? '$24.99 / month' : '$14.99 / month'],
                 ['Status', s.planCanceled ? 'Canceled' : 'Active'],
                 [s.planCanceled ? 'Active until' : 'Next payment', '9 Nov 2026'],
                 ['Payment', 'Card •••• 4242'],
@@ -946,7 +945,7 @@ export function SeekerSubscription() {
                 </Btn>
                 {max ? (
                   <Btn kind="tonal" h={48} full onClick={() => (s.subscribe('premium'), toast('Switched to Premium', 'star'))}>
-                    Switch to Premium for $2.99 / month
+                    Switch to Premium for $14.99 / month
                   </Btn>
                 ) : null}
                 <button className="strong danger" style={{ height: 40 }} onClick={() => setCancel(true)}>
@@ -962,7 +961,7 @@ export function SeekerSubscription() {
       </div>
       {cancel ? (
         <Modal onClose={() => setCancel(false)} label="Cancel subscription" width={460}>
-          <ModalHead title="Cancel subscription?" sub={`You keep ${max ? 'Max' : 'Premium'} until 9 Nov 2026. After that your profile moves to the Free plan: 10 applications a month, no badge${max ? ', no frame and no top placement' : ''}.`} onClose={() => setCancel(false)} />
+          <ModalHead title="Cancel subscription?" sub={`You keep ${max ? 'Max' : 'Premium'} until 9 Nov 2026. After that your profile moves to the Free plan: 5 applications a month, no badge${max ? ', no frame and no top placement' : ''}.`} onClose={() => setCancel(false)} />
           <div className="row g8">
             <Btn kind="secondary" style={{ flex: 1 }} onClick={() => setCancel(false)}>
               Keep it
@@ -1015,7 +1014,7 @@ export function SeekerSettings() {
       </Sec>
       <Sec title="Subscription" gap={4}>
         <div>
-          <SRow icon="star" title="Subscription" sub={s.plan === 'free' ? 'Free plan · 10 applications a month' : `Renews 9 Nov 2026`} to={s.plan === 'free' ? '/profile/plans' : '/profile/subscription'} right={s.plan !== 'free' ? <span className="row g8"><Pill tone={s.plan === 'max' ? 'max' : 'blue'}>{s.plan === 'max' ? 'Max' : 'Premium'}</Pill><Icon name="chevron-right" /></span> : undefined} />
+          <SRow icon="star" title="Subscription" sub={s.plan === 'free' ? 'Free plan · 5 applications a month' : `Renews 9 Nov 2026`} to={s.plan === 'free' ? '/profile/plans' : '/profile/subscription'} right={s.plan !== 'free' ? <span className="row g8"><Pill tone={s.plan === 'max' ? 'max' : 'blue'}>{s.plan === 'max' ? 'Max' : 'Premium'}</Pill><Icon name="chevron-right" /></span> : undefined} />
           <SRow icon="sparkles" title="Profile look" sub="Frame and header for your profile" to="/profile/look" />
         </div>
       </Sec>

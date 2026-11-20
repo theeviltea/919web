@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { applyTalentFilters, availableToday, candidates, countTalentFilters, emptyTalentFilters, findCandidate, hasLabels, matchesCandidate, talentChips, talentSphereLabels, talentSphereOrder, type Candidate, type ProfileHas, type TalentFilters, type TalentSphere } from '../../data/talentPool';
-import { company, useEmployer } from '../../data/employer';
+import { company, useEmployer, EMP_PLANS, planName, requestLimitOf, tierOfPlan, type PaidPlan } from '../../data/employer';
 import { tierRank } from '../../data/tiers';
 import { allCountries, citiesFor } from '../../data/registration';
 import { toggleIn } from '../../data/filters';
@@ -10,6 +10,7 @@ import { candidateCard, Hero } from '../../ui/domain';
 import { CompletenessCard, MatchCard } from './Analytics';
 import { Link } from '../../lib/links';
 import { ProfileView } from '../seeker/People';
+import { PlanPaywall } from './PlanPaywall';
 import { Btn, CheckRow, Drawer, FlashTile, H2, Icon, Modal, ModalHead, Pill, Select, Tabs, useToast, Avatar, Field } from '../../ui/kit';
 
 type View = 'profiles' | 'videos' | 'today';
@@ -158,9 +159,9 @@ export function FindTalent() {
         eyebrow={
           <span className="row g8">
             {e.info.name || company.name}
-            {e.plan === 'premium' ? (
+            {tierOfPlan(e.plan) !== 'free' ? (
               <Pill tone="orange" icon="star" h={24}>
-                Premium
+                {planName(e.plan)}
               </Pill>
             ) : null}
           </span>
@@ -357,17 +358,17 @@ function TalentAside() {
           </div>
         ) : null}
       </section>
-      {e.plan === 'premium' ? (
+      {tierOfPlan(e.plan) !== 'free' ? (
         <section className="card" style={{ background: 'var(--panel-dark)', color: '#fff', gap: 12 }}>
           <div className="row between">
             <Pill tone="orange" icon="star">
-              Premium
+              {planName(e.plan)}
             </Pill>
             <span className="small" style={{ color: 'var(--panel-dark-muted)' }}>
               renews 9 Nov
             </span>
           </div>
-          {(['Message any candidate directly', 'Unlimited active vacancies', 'See who is available today'] as const).map((x) => (
+          {EMP_PLANS[tierOfPlan(e.plan) as PaidPlan].perks.map(([x]) => (
             <div key={x} className="row g10 s14">
               <span style={{ color: 'var(--urgent)', display: 'flex' }}>
                 <Icon name="check" size={18} />
@@ -384,12 +385,12 @@ function TalentAside() {
           <Pill tone="orange" icon="star">
             919 Premium
           </Pill>
-          <div className="s16 strong">Message any candidate and post more vacancies</div>
+          <div className="s16 strong">Post up to 10 vacancies and write to candidates first</div>
           <p className="s14 lh" style={{ color: 'var(--panel-dark-muted)' }}>
-            On Free you can only chat with people who applied, and keep 1 active vacancy.
+            On Free you keep 1 active vacancy and chat only with people who applied.
           </p>
           <Btn kind="premium" h={44} full to="/company/subscription">
-            Get Premium · $3.99 / month
+            Try Premium · first month free
           </Btn>
         </section>
       )}
@@ -460,8 +461,11 @@ export function CandidatePage() {
   const contact = () => {
     if (chat) return nav(`/hire/messages/${chat.id}`);
     if (c.today && !e.verified) return setSheet('verify');
-    setSheet(e.plan === 'free' ? 'paywall' : 'contact');
+    // Free: chats only via applications; Premium: 10 chat requests a month; Super Premium: direct messages, no limit.
+    setSheet(e.requestsUsed >= requestLimitOf(e.plan) ? 'paywall' : 'contact');
   };
+  const tier = tierOfPlan(e.plan);
+  const upsell: PaidPlan = tier === 'free' ? 'premium' : 'super';
   return (
     <>
       <ProfileView
@@ -505,7 +509,7 @@ export function CandidatePage() {
               </div>
             </div>
             <Pill tone="orange" icon="star">
-              Premium
+              {planName(e.plan)}
             </Pill>
           </div>
           <div>
@@ -518,7 +522,9 @@ export function CandidatePage() {
           </div>
           <div className="row g10 s14" style={{ padding: '12px 14px', borderRadius: 14, background: 'var(--primary-secondary)', color: 'var(--link)' }}>
             <Icon name="message" size={18} />
-            {first} gets a contact request. You can chat once they accept it.
+            {tier === 'super'
+              ? `Your message goes straight to ${first}’s chats.`
+              : `${first} gets a contact request. You can chat once they accept it. ${requestLimitOf(e.plan) - e.requestsUsed} of ${requestLimitOf(e.plan)} requests left this month.`}
           </div>
           <Btn
             h={56}
@@ -526,67 +532,22 @@ export function CandidatePage() {
             onClick={() => {
               const tid = e.requestContact(c.id, msg);
               setSheet(null);
-              toast(`Request sent. You can chat once ${first} accepts it`, 'message');
+              toast(tier === 'super' ? `Message sent to ${first}` : `Request sent. You can chat once ${first} accepts it`, 'message');
               nav(`/hire/messages/${tid}`);
             }}
           >
-            Send request
+            {tier === 'super' ? 'Send message' : 'Send request'}
           </Btn>
         </Modal>
       ) : null}
       {sheet === 'paywall' ? (
-        <Modal onClose={() => setSheet(null)} label="919 Premium" width={520}>
-          <div className="row between">
-            <Pill tone="orange" icon="star" h={28}>
-              919 Premium
-            </Pill>
-            <button className="iconbtn soft" aria-label="Close" onClick={() => setSheet(null)}>
-              <Icon name="cancel" />
-            </button>
-          </div>
-          <div>
-            <h2 className="display d3">Write to {first} directly</h2>
-            <p className="muted lh" style={{ marginTop: 8 }}>
-              On the Free plan you can chat only with candidates who applied to your vacancy.
-            </p>
-          </div>
-          {(
-            [
-              ['message', 'Message any candidate directly', 'From their profile, video or search — without waiting for an application'],
-              ['briefcase', 'Unlimited active vacancies', 'Free plan includes 1 active vacancy at a time'],
-            ] as const
-          ).map(([i, t, x]) => (
-            <div key={t} className="row top g14">
-              <span className="tile" style={{ width: 44, height: 44, background: 'var(--premium-back)', color: 'var(--premium-strong)', borderRadius: 14 }}>
-                <Icon name={i} />
-              </span>
-              <div>
-                <div className="s16 strong">{t}</div>
-                <div className="s14 muted" style={{ marginTop: 2 }}>
-                  {x}
-                </div>
-              </div>
-            </div>
-          ))}
-          <div className="row between" style={{ padding: 18, borderRadius: 18, border: '2px solid var(--premium)' }}>
-            <div>
-              <div className="s16 strong">Monthly</div>
-              <div className="small muted">Renews automatically · cancel any time</div>
-            </div>
-            <div className="s20 strong">
-              $3.99 <span className="s14 muted semi">/ month</span>
-            </div>
-          </div>
-          <Btn kind="premium" h={56} full onClick={() => (e.setPlan('premium'), setSheet('contact'), toast('You’re on Premium', 'star'))}>
-            Subscribe for $3.99 / month
-          </Btn>
-          <button className="link s14" onClick={() => setSheet(null)}>
-            Not now
-          </button>
-          <p className="small muted" style={{ textAlign: 'center', marginTop: -8 }}>
-            Billed monthly to your card. Terms · Privacy
-          </p>
-        </Modal>
+        <PlanPaywall
+          plan={upsell}
+          title={upsell === 'premium' ? `Write to ${first} directly` : 'All 10 chat requests used'}
+          text={upsell === 'premium' ? 'On the Free plan you can chat only with candidates who applied to your vacancy.' : 'Premium includes 10 chat requests a month. With Super Premium you message anyone directly, without limits.'}
+          onClose={() => setSheet(null)}
+          onSubscribe={() => (e.setPlan(upsell), setSheet('contact'), toast(upsell === 'premium' ? 'Premium is active. Your first month is free' : 'Super Premium is active', 'star'))}
+        />
       ) : null}
       {sheet === 'verify' ? (
         <Modal onClose={() => setSheet(null)} label="Verify your company to message" width={500}>

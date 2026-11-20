@@ -1,7 +1,7 @@
 // Post a vacancy: Category → Basic information → Salary → Requirements → sent for review. Also edits a vacancy (?edit=id).
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { company, useEmployer, type MyVacancy } from '../../data/employer';
+import { company, useEmployer, type MyVacancy, tierOfPlan, vacancyLimitOf, type PaidPlan } from '../../data/employer';
 import { contractTypes, formatAmount } from '../../data/dictionaries';
 import { fields, citiesFor, allCountries } from '../../data/registration';
 import type { ContractType } from '../../data/types';
@@ -9,6 +9,7 @@ import type { Photo } from '../../data/signup';
 import { FEMALE, city } from '../../data/asset';
 import { Wizard } from '../../layout/Wizard';
 import { PhotoGrid } from '../onboarding/Seeker';
+import { PlanPaywall } from './PlanPaywall';
 import { Btn, Card, Field, Icon, Option, PageTitle, Pill, Select, Toggle, useToast } from '../../ui/kit';
 
 const STEPS = ['Category', 'Basic information', 'Salary', 'Requirements'];
@@ -204,7 +205,21 @@ export function PostVacancy() {
 
   const valid = [!!d.field && d.roles.length > 0, !!d.title.trim() && d.description.trim().length >= 20 && !!d.start && !!d.city && d.photos.length > 0, d.mode === 'negotiable' || Number(d.amount) > 0, !!d.gender && !!d.age][step];
   const next = () => (step < 3 ? setStep(step + 1) : send());
+  // Plan limit on active vacancies (§12): Free 1, Premium 10, Super Premium unlimited.
+  const liveCount = e.vacancies.filter((v) => v.status === 'active' || v.status === 'review').length;
+  const blocked = !editing && liveCount >= vacancyLimitOf(e.plan);
+  const upsell: PaidPlan = tierOfPlan(e.plan) === 'free' ? 'premium' : 'super';
   return (
+    <>
+      {blocked ? (
+        <PlanPaywall
+          plan={upsell}
+          title={upsell === 'premium' ? 'Post more than one vacancy' : 'Post more than 10 vacancies'}
+          text={upsell === 'premium' ? 'The Free plan includes 1 active vacancy at a time.' : 'Premium includes 10 active vacancies at a time. Super Premium has no limit.'}
+          onClose={() => nav('/hire/vacancies')}
+          onSubscribe={() => (e.setPlan(upsell), toast(upsell === 'premium' ? 'Premium is active. Your first month is free' : 'Super Premium is active', 'star'))}
+        />
+      ) : null}
     <Wizard
       steps={STEPS}
       cur={step}
@@ -400,5 +415,6 @@ export function PostVacancy() {
         </>
       ) : null}
     </Wizard>
+    </>
   );
 }

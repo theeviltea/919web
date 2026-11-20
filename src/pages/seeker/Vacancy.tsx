@@ -8,6 +8,8 @@ import { companySlug } from "../../data/companies";
 import {
   completeness,
   FREE_APPLY_LIMIT,
+  PREMIUM_APPLY_LIMIT,
+  applyLimitOf,
   matchRequirement,
   missingForApply,
   sphereToField,
@@ -87,10 +89,10 @@ export function ApplyModal({
         <Icon name="view" size={18} />
         The employer will see your profile, photos and video presentation.
       </div>
-      {s.plan === "free" ? (
+      {s.plan !== "max" ? (
         <div className="small muted">
-          Free plan: {s.appsUsed + 1} of {FREE_APPLY_LIMIT} applications this
-          month.
+          {s.plan === "free" ? "Free" : "Premium"} plan: {s.appsUsed + 1} of{" "}
+          {applyLimitOf(s.plan)} applications this month.
         </div>
       ) : null}
       <Btn
@@ -226,11 +228,17 @@ function GateModal({ v, onClose }: { v: Vacancy; onClose: () => void }) {
 }
 
 function LimitModal({ onClose }: { onClose: () => void }) {
+  const s = useSeeker();
+  const limit = applyLimitOf(s.plan);
   return (
     <Modal onClose={onClose} label="Monthly limit reached" width={480}>
       <ModalHead
-        title="You’ve used 10 of 10 applications"
-        sub="The Free plan includes 10 applications a month. Premium and Max have no limit."
+        title={`You’ve used ${limit} of ${limit} applications`}
+        sub={
+          s.plan === "free"
+            ? `The Free plan includes ${FREE_APPLY_LIMIT} applications a month. Premium gives ${PREMIUM_APPLY_LIMIT}, Max has no limit.`
+            : `Premium includes ${PREMIUM_APPLY_LIMIT} applications a month. Max has no limit.`
+        }
         onClose={onClose}
       />
       <Btn h={56} full to="/profile/plans">
@@ -424,8 +432,7 @@ export function VacancyPage({ guest }: { guest?: boolean }) {
   const saved = !guest && s.saved.includes(v.id);
   const respond = () => {
     if (guest) return setSheet("auth");
-    if (s.plan === "free" && s.appsUsed >= FREE_APPLY_LIMIT)
-      return setSheet("limit");
+    if (s.appsUsed >= applyLimitOf(s.plan)) return setSheet("limit");
     const gaps = missingForApply(
       s.profile,
       v,
@@ -542,10 +549,11 @@ export function VacancyPage({ guest }: { guest?: boolean }) {
             Share
           </Btn>
         </div>
-        {!guest && s.plan === "free" ? (
+        {!guest && s.plan !== "max" ? (
           <p className="small muted lh">
-            The employer sees your profile, photos and video presentation. Free
-            plan: {s.appsUsed} of {FREE_APPLY_LIMIT} applications this month.
+            The employer sees your profile, photos and video presentation.{" "}
+            {s.plan === "free" ? "Free" : "Premium"} plan: {s.appsUsed} of{" "}
+            {applyLimitOf(s.plan)} applications this month.
           </p>
         ) : null}
       </Card>

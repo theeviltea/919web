@@ -1,7 +1,7 @@
 // Employer: company home (header, KPIs, vacancies, plan, recruiters, menu) and the notification centre.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { company, me, useEmployer, type EmpNotif, type EmpNotifKind } from '../../data/employer';
+import { company, me, useEmployer, type EmpNotif, type EmpNotifKind, EMP_PLANS, planName, tierOfPlan, vacancyLimitOf, type PaidPlan } from '../../data/employer';
 import pattern from '../../assets/img/pattern-3d.jpg';
 import { Link } from '../../lib/links';
 import { StatusPill } from './Vacancies';
@@ -17,7 +17,7 @@ export function CompanyHome() {
     ['edit', 'Company details', '/company/details'],
     ['verified', 'Verification', '/company/verification', e.verified ? 'Verified' : e.licence.status === 'review' ? 'On review' : 'Not verified'],
     ['users', 'Team and roles', '/company/team', e.joinRequests.length ? `${e.joinRequests.length} request` : undefined],
-    ['wallet', 'Subscription', '/company/subscription', e.plan === 'premium' ? 'Premium' : e.plan === 'canceled' ? 'Canceled' : 'Free'],
+    ['wallet', 'Subscription', '/company/subscription', e.plan === 'canceled' ? 'Canceled' : planName(e.plan)],
     ['settings', 'Settings', '/company/settings'],
   ];
   return (
@@ -46,7 +46,7 @@ export function CompanyHome() {
           <div className="grid3">
             {(
               [
-                [active.length, 'Active vacancies', e.plan === 'premium' ? 'no limit on Premium' : '1 on the Free plan'],
+                [active.length, 'Active vacancies', vacancyLimitOf(e.plan) === Infinity ? 'no limit' : `up to ${vacancyLimitOf(e.plan)} on ${planName(e.plan)}`],
                 [totalApps, 'Applicants', 'all time'],
                 [hires, 'Hires', 'confirmed'],
               ] as const
@@ -91,19 +91,19 @@ export function CompanyHome() {
           </Card>
         </div>
         <aside className="stack">
-          {e.plan === 'premium' ? (
+          {tierOfPlan(e.plan) !== 'free' ? (
             <section className="card" style={{ background: 'var(--panel-dark)', color: '#fff', gap: 10 }}>
               <div className="row g8">
                 <Pill tone="orange" icon="star">
-                  Premium
+                  {planName(e.plan)}
                 </Pill>
                 <span className="small" style={{ color: 'var(--panel-dark-muted)' }}>
-                  renews 9 Nov
+                  {e.plan === 'canceled' ? 'until 9 Nov' : 'renews 9 Nov'}
                 </span>
               </div>
-              <div className="s16 strong">Unlimited vacancies and direct messages</div>
+              <div className="s16 strong">{tierOfPlan(e.plan) === 'super' ? 'Unlimited vacancies and direct messages' : 'Up to 10 vacancies and 10 chat requests a month'}</div>
               <div className="s14" style={{ color: 'var(--panel-dark-muted)' }}>
-                $3.99 / month
+                {EMP_PLANS[tierOfPlan(e.plan) as PaidPlan].price} / month
               </div>
             </section>
           ) : (
@@ -111,9 +111,9 @@ export function CompanyHome() {
               <Pill tone="orange" icon="star">
                 919 Premium
               </Pill>
-              <div className="s16 strong">Message any candidate and post more vacancies</div>
+              <div className="s16 strong">Post up to 10 vacancies and write to candidates first</div>
               <Btn kind="premium" h={44} to="/company/subscription">
-                Get Premium · $3.99 / month
+                Try Premium · first month free
               </Btn>
             </section>
           )}

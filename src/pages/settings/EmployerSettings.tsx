@@ -358,6 +358,7 @@ export function CompanySubscription() {
   const inc: [IconName, string, string][] = [
     ['briefcase', 'Multiple job postings', 'Publish as many vacancies as you need at once'],
     ['message', 'Direct messages to candidates', 'Contact any candidate from their profile, video or search'],
+    ['view', 'Vacancy analytics', 'Views per day, who viewed and where they came from'],
     ['star', 'More hiring opportunities', 'Premium badge on your company and vacancies'],
   ];
   const premium = e.plan !== 'free';

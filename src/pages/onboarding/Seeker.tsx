@@ -341,7 +341,7 @@ export function Review() {
   if (!seeker.occupations.length) return <Navigate to="/signup/occupation" replace />;
   const age = ageFrom(seeker.dob);
   return (
-    <Wizard steps={SEEKER_STEPS} cur={4} backTo="/signup/media" onNext={() => finish({ role: 'seeker' })}>
+    <Wizard steps={SEEKER_STEPS} cur={4} backTo="/signup/media" onNext={() => finish({ role: 'seeker', firstName: `${seeker.firstName} ${seeker.lastName}`.trim(), created: true })}>
       <PageTitle title="Check your profile" sub="This is what employers will see. You can edit it any time." />
       <div className="row g20">
         {seeker.photo ? <img src={seeker.photo} alt="" className="avatar" style={{ width: 88, height: 88 }} /> : null}

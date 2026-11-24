@@ -1,5 +1,6 @@
 // Employer account: company details, verification by trade licence, team and roles, subscription, settings.
 import { useState, type ReactNode } from 'react';
+import { AccountsSection, useAccounts } from '../../ui/accounts';
 import { useNavigate } from 'react-router-dom';
 import { company, EMP_PLANS, EMPLOYER_LOSSES, initialsOf, planName, tierOfPlan, useEmployer, type Member, type PaidPlan } from '../../data/employer';
 import { allCountries, citiesFor, positions } from '../../data/registration';
@@ -488,13 +489,14 @@ export function CompanySubscription() {
 
 export function CompanySettings() {
   const e = useEmployer();
-  const { signOut } = useSession();
-  const nav = useNavigate();
+  const { user, accounts } = useSession();
+  const { logOut } = useAccounts();
   const [modal, setModal] = useState<'notif' | 'delete' | 'leave' | null>(null);
   const [prefs, setPrefs] = useState<Record<string, boolean>>({ applicants: true, messages: true, join: true, moderation: true, email: false });
-  const out = () => (signOut(), nav('/', { replace: true }));
+  const out = () => (setModal(null), logOut('current'));
   return (
     <EmpLayout active="Settings">
+      <AccountsSection Sec={Sec} />
       <Sec title="Account" gap={4}>
         <div>
           <SRow icon="notification" title="Notifications" sub="New applicants, messages, join requests" onClick={() => setModal('notif')} />
@@ -517,7 +519,7 @@ export function CompanySettings() {
       <Card style={{ padding: '12px 28px 20px', gap: 8 }}>
         <div>
           <SRow icon="building" title="Leave company" onClick={() => setModal('leave')} right={<span />} />
-          <SRow icon="logout" title="Log out" onClick={out} right={<span />} />
+          <SRow icon="logout" title={accounts.length > 1 && user ? `Log out of ${user.name}` : 'Log out'} onClick={out} right={<span />} />
           <SRow icon="trash" title="Delete account" danger onClick={() => setModal('delete')} right={<span />} />
         </div>
         <div className="small light">919 for business · web 0.1.0</div>

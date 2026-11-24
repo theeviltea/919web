@@ -1,10 +1,11 @@
 // Top navigation (desktop) + bottom tab bar (mobile) for guests, job seekers and employers.
 import { useCallback, useState } from 'react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Link, NavLink } from '../lib/links';
 import { ABOUT_URL } from '../lib/site';
 import { useTheme, type ThemePref } from '../lib/theme';
-import { useSession } from '../data/session';
+import { MAX_ACCOUNTS, useSession } from '../data/session';
+import { AccountAvatar, Badge, RoleTag, useAccountUnread, useAccounts } from '../ui/accounts';
 import { useSeeker } from '../data/seeker';
 import { company, me, useEmployer } from '../data/employer';
 import { SeekerNotifications } from '../pages/seeker/Notifications';
@@ -125,12 +126,49 @@ function AccountMenu({ trigger, head, links, signOut }: { trigger: React.ReactNo
         <div className="menu account" role="menu" onClick={close}>
           <div className="menu-head">{head}</div>
           <div className="menu-sep" />
+          <SwitchSection />
+          <div className="menu-sep" />
           <div className="menu-list">{links.map(item)}</div>
           <div className="menu-sep" />
           <ThemeSwitch />
           <div className="menu-sep" />
           <div className="menu-list">{item(signOut)}</div>
         </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** WAccMenu: the other accounts in this browser (click to switch) and "Add account". */
+function SwitchSection() {
+  const { user, accounts } = useSession();
+  const { switchTo, openAdd } = useAccounts();
+  const unread = useAccountUnread();
+  const others = accounts.filter((a) => a.id !== user?.id);
+  return (
+    <div className="menu-list">
+      {others.length ? <span className="menu-label" style={{ padding: '4px 10px 4px' }}>Switch account</span> : null}
+      {others.map((a) => (
+        <button key={a.id} className="mi acc" onClick={() => switchTo(a.id)} aria-label={`Switch to ${a.name}`}>
+          <AccountAvatar account={a} size={32} />
+          <span className="grow" style={{ minWidth: 0 }}>
+            <span className="s14 strong ellipsis" style={{ display: 'block' }}>
+              {a.name}
+            </span>
+            <span className="row" style={{ marginTop: 3 }}>
+              <RoleTag role={a.role} />
+            </span>
+          </span>
+          <Badge n={unread(a)} />
+        </button>
+      ))}
+      {accounts.length < MAX_ACCOUNTS ? (
+        <button className="mi" onClick={openAdd} style={{ color: 'var(--link)' }}>
+          <span className="mi-ico" style={{ color: 'var(--link)', background: 'transparent', border: '1.5px dashed var(--text-light-secondary)', boxSizing: 'border-box' }}>
+            <Icon name="add" size={18} />
+          </span>
+          <span className="grow">Add account</span>
+        </button>
       ) : null}
     </div>
   );
@@ -191,13 +229,11 @@ export function GuestShell() {
   );
 }
 
+/** Log out of the current account: with another account in the browser it switches to that one (WAccMenu "Log out of …"). */
 function useSignOut() {
-  const { signOut } = useSession();
-  const nav = useNavigate();
-  return () => {
-    signOut();
-    nav('/', { replace: true });
-  };
+  const { user, accounts } = useSession();
+  const { logOut } = useAccounts();
+  return { label: accounts.length > 1 && user ? `Log out of ${user.name}` : 'Log out', onClick: () => logOut('current') };
 }
 
 export function SeekerShell() {
@@ -242,7 +278,7 @@ export function SeekerShell() {
                 { to: '/profile/settings', label: 'Settings', icon: 'settings' },
                 { href: ABOUT_URL, label: 'About 919', icon: 'globe' },
               ]}
-              signOut={{ label: 'Log out', icon: 'logout', onClick: out, danger: true }}
+              signOut={{ label: out.label, icon: 'logout', onClick: out.onClick, danger: true }}
               head={
                 <>
                   <Avatar src={p.photo} size={44} />
@@ -314,7 +350,7 @@ export function EmployerShell() {
                 { to: '/company/settings', label: 'Settings', icon: 'settings' },
                 { href: ABOUT_URL, label: 'About 919', icon: 'globe' },
               ]}
-              signOut={{ label: 'Log out', icon: 'logout', onClick: out, danger: true }}
+              signOut={{ label: out.label, icon: 'logout', onClick: out.onClick, danger: true }}
               head={
                 <>
                   <Initials text={company.initials} size={44} radius={14} />

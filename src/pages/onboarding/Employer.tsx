@@ -91,7 +91,7 @@ export function EmpRep() {
         setEmployer({ photo, firstName: f.first.trim(), lastName: f.last.trim(), position: f.position, email: f.email, phone: f.phone });
         if (e.mode === 'private') {
           resetLicence(undefined, true);
-          finish({ role: 'employer', firstName: f.first, company: { name: `${f.first} ${f.last}`, status: 'approved' } });
+          finish({ role: 'employer', firstName: f.first, company: { name: `${f.first} ${f.last}`, status: 'approved' }, created: true });
         } else nav(e.mode === 'join' ? '/employer/join' : '/employer/company');
       }}
     >
@@ -195,7 +195,7 @@ export function EmpLicence() {
     const lic = skip ? undefined : file;
     setEmployer({ licence: lic });
     resetLicence(lic);
-    finish({ role: 'employer', firstName: e.firstName, company: { name: e.company.name, status: 'pending' } });
+    finish({ role: 'employer', firstName: e.firstName, company: { name: e.company.name, status: 'pending' }, created: true });
     nav('/employer/review', { replace: true });
   };
   return (

@@ -4,12 +4,13 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Link } from '../../lib/links';
 import { DEMO_EMPLOYER, useFinishAuth } from '../../lib/auth';
 import { city, stock } from '../../data/asset';
-import { useSession, type Role } from '../../data/session';
+import { accountIdFor, useSession, type Role } from '../../data/session';
+import { AccountAvatar, useAccounts } from '../../ui/accounts';
 import { useSignup } from '../../data/signup';
 import { allCountries, citiesFor, formatDob } from '../../data/registration';
 import { formatPhone } from '../../data/dictionaries';
 import pattern from '../../assets/img/pattern-3d.jpg';
-import { Btn, Field, Icon, IconBtn, Logo, PageTitle, Select } from '../../ui/kit';
+import { Btn, Field, Icon, IconBtn, Logo, Modal, PageTitle, Select } from '../../ui/kit';
 
 export function BrandPanel() {
   const ph: [string, number, number, number, number][] = [
@@ -145,21 +146,44 @@ function Divider({ children }: { children: ReactNode }) {
 export function SignIn() {
   const nav = useNavigate();
   const finish = useFinishAuth();
+  const { user, accounts, adding } = useSession();
+  const { switchTo } = useAccounts();
   const [digits, setDigits] = useState('');
+  const [already, setAlready] = useState<string | null>(null);
   const ok = digits.length === 9;
+  const add = adding && !!user;
+  const existing = accounts.find((a) => a.id === already);
   return (
-    <AuthLayout top={<CreateTop />}>
-      <PageTitle title="Welcome back" sub="Enter the phone number linked to your 919 account. We’ll text you a one-time code." />
+    <AuthLayout
+      top={
+        add && user ? (
+          <span className="row g8" style={{ height: 44, padding: '0 14px 0 6px', borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--stroke)' }}>
+            <AccountAvatar account={user} size={32} />
+            <span className="s14 semi">{user.role === 'seeker' ? user.name.split(' ')[0] : user.name} stays signed in</span>
+          </span>
+        ) : (
+          <CreateTop />
+        )
+      }>
+      {add ? (
+        <PageTitle title="Add an account" sub="Sign in to your other 919 account. You can switch between accounts in Settings or from the account menu." />
+      ) : (
+        <PageTitle title="Welcome back" sub="Enter the phone number linked to your 919 account. We’ll text you a one-time code." />
+      )}
       <form
         className="col g14"
         onSubmit={(e) => {
           e.preventDefault();
-          if (ok) nav(`/auth/code?flow=signin&to=${encodeURIComponent(`+971|${digits}`)}`);
+          if (!ok) return;
+          // Prototype: a number of all 8s is the demo employer, any other one the demo seeker (AccAlready when it's already here).
+          const id = accountIdFor(/^8+$/.test(digits) ? 'employer' : 'seeker');
+          if (add && accounts.some((a) => a.id === id)) return setAlready(id);
+          nav(`/auth/code?flow=signin&to=${encodeURIComponent(`+971|${digits}`)}`);
         }}
       >
         <PhoneField digits={digits} onChange={setDigits} autoFocus />
         <Btn type="submit" h={56} full disabled={!ok}>
-          Continue
+          {add ? 'Get code' : 'Continue'}
         </Btn>
       </form>
       <Divider>Other ways to sign in</Divider>
@@ -167,6 +191,21 @@ export function SignIn() {
       <p className="small muted lh">
         Use the method you chose when you created the account. Demo: any number opens the job seeker account, 88 888 8888 opens the employer.
       </p>
+      {existing ? (
+        <Modal onClose={() => setAlready(null)} label="This account is already added" width={440}>
+          <div className="col g10" style={{ alignItems: 'center', textAlign: 'center' }}>
+            <AccountAvatar account={existing} size={64} />
+            <h2 className="display d4">This account is already added</h2>
+            <p className="muted lh">{existing.name} is already in this browser. Switch to it instead.</p>
+          </div>
+          <Btn h={52} full onClick={() => (setAlready(null), existing.id === user?.id ? nav(-1) : switchTo(existing.id))}>
+            {existing.id === user?.id ? 'Stay in this account' : `Switch to ${existing.name}`}
+          </Btn>
+          <Btn kind="secondary" h={52} full onClick={() => (setAlready(null), setDigits(''))} style={{ marginTop: -6 }}>
+            Use another account
+          </Btn>
+        </Modal>
+      ) : null}
     </AuthLayout>
   );
 }

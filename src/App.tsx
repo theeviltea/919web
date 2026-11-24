@@ -7,6 +7,7 @@ import { EmployerProvider } from './data/employer';
 import { applyTheme } from './lib/theme';
 import { releaseIfIdle } from './lib/scrollLock';
 import { ToastProvider } from './ui/kit';
+import { AccountsProvider } from './ui/accounts';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { AppPromoSheet } from './ui/appPromo';
 import { EmployerShell, GuestShell, SeekerShell } from './layout/Shell';
@@ -64,6 +65,7 @@ export default function App() {
           <SignupProvider>
             <SeekerProvider>
               <EmployerProvider>
+                <AccountsProvider>
                 <Routes>
                   <Route element={<GuestShell />}>
                     <Route index element={<GuestFeed />} />
@@ -136,6 +138,7 @@ export default function App() {
                   <Route path="post" element={<PostVacancy />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
+                </AccountsProvider>
               </EmployerProvider>
             </SeekerProvider>
           </SignupProvider>

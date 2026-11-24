@@ -11,6 +11,7 @@ import { city } from '../../data/asset';
 import type { FrameStyle } from '../../data/tiers';
 import { PhotoGrid } from '../onboarding/Seeker';
 import { PhoneChange } from '../../ui/phoneChange';
+import { AccountsSection, useAccounts } from '../../ui/accounts';
 import { Avatar, Btn, Card, Field, FRAMES, H2, Icon, Initials, Modal, ModalHead, Option, Pill, Select, Toggle, TierBadge, useToast, type IconName } from '../../ui/kit';
 
 const NAV: [string, [string, IconName, string][]][] = [
@@ -992,8 +993,8 @@ export function ThemeSeg() {
 
 export function SeekerSettings() {
   const s = useSeeker();
-  const { signOut } = useSession();
-  const nav = useNavigate();
+  const { user, accounts } = useSession();
+  const { logOut } = useAccounts();
   const [modal, setModal] = useState<'notif' | 'privacy' | 'delete' | null>(null);
   const prefs: [string, string][] = [
     ['apps', 'Application updates'],
@@ -1005,6 +1006,7 @@ export function SeekerSettings() {
   ];
   return (
     <SeekerLayout active="Settings">
+      <AccountsSection Sec={Sec} />
       <Sec title="Account" gap={4}>
         <div>
           <SRow icon="notification" title="Notifications" sub="Applications, messages, new vacancies" onClick={() => setModal('notif')} />
@@ -1026,7 +1028,7 @@ export function SeekerSettings() {
       </Sec>
       <Card style={{ padding: '12px 28px 20px', gap: 8 }}>
         <div>
-          <SRow icon="logout" title="Log out" onClick={() => (signOut(), nav('/', { replace: true }))} right={<span />} />
+          <SRow icon="logout" title={accounts.length > 1 && user ? `Log out of ${user.name}` : 'Log out'} onClick={() => logOut('current')} right={<span />} />
           <SRow icon="trash" title="Delete account" danger onClick={() => setModal('delete')} right={<span />} />
         </div>
         <div className="small light">919 · web 0.1.0</div>
@@ -1058,7 +1060,7 @@ export function SeekerSettings() {
       {modal === 'delete' ? (
         <Modal onClose={() => setModal(null)} label="Delete account" width={460}>
           <ModalHead title="Delete account?" sub="Your profile, applications and chats are deleted for good. Active subscriptions are not refunded." onClose={() => setModal(null)} />
-          <Btn kind="danger" h={52} full onClick={() => (signOut(), nav('/', { replace: true }))}>
+          <Btn kind="danger" h={52} full onClick={() => (setModal(null), logOut('current'))}>
             Delete account
           </Btn>
         </Modal>
